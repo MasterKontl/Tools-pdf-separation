@@ -94,7 +94,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/subscriptions', [AdminSubscriptionController::class, 'index'])->name('subscriptions.index');
 });
 
-Route::get('/health', function () {
+Route::middleware(['auth', 'admin'])->get('/health', function () {
     $binPath = config('converter.bin_path', 'pdftoppm');
     $pdftoppmAvailable = false;
     $pdftoppmVersion = null;

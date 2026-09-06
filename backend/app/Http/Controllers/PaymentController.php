@@ -68,11 +68,23 @@ class PaymentController extends Controller
         string $orderId,
         PakasirService $pakasir,
         PaymentService $paymentService
-    ): RedirectResponse {
+    ) {
         $payment = Payment::where('provider_reference', $orderId)->first();
 
         if (!$payment) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['success' => false, 'error' => 'Transaksi tidak ditemukan.'], 404);
+            }
             return redirect()->route('dashboard')->with('error', 'Transaksi pembayaran tidak ditemukan.');
+        }
+
+        // Security: Ensure caller owns the payment or is admin (if authenticated)
+        $user = $request->user();
+        if ($user && !$user->isAdmin() && (int) $payment->user_id !== (int) $user->id) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['success' => false, 'error' => 'Akses ditolak.'], 403);
+            }
+            return redirect()->route('dashboard')->with('error', 'Akses ditolak.');
         }
 
         // If still pending, attempt quick active verification check
@@ -108,11 +120,21 @@ class PaymentController extends Controller
     /**
      * Check payment status by orderId (API).
      */
-    public function status(string $orderId): JsonResponse
+    public function status(Request $request, string $orderId): JsonResponse
     {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['success' => false, 'error' => 'Unauthenticated.'], 401);
+        }
+
         $payment = Payment::with('plan')->where('provider_reference', $orderId)->first();
         if (!$payment) {
             return response()->json(['success' => false, 'error' => 'Transaksi tidak ditemukan.'], 404);
+        }
+
+        // Ownership verification (IDOR protection)
+        if (!$user->isAdmin() && (int) $payment->user_id !== (int) $user->id) {
+            return response()->json(['success' => false, 'error' => 'Akses ditolak.'], 403);
         }
 
         return response()->json([

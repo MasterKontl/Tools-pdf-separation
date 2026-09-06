@@ -142,7 +142,13 @@ class PdfConverterController extends Controller
             $dpi = (int) $request->input('dpi', 300);
 
             if ($request->filled('temp_file_id')) {
-                $tempId = $request->input('temp_file_id');
+                $tempId = (string) $request->input('temp_file_id');
+
+                // Security: Strictly enforce alphanumeric token format (prevent path traversal / directory escaping)
+                if (!preg_match('/^[a-zA-Z0-9]{10,64}$/', $tempId)) {
+                    throw new Exception('ID file sementara tidak valid.');
+                }
+
                 $tempFetchedPath = storage_path('app/temp/url_import_' . $tempId . '.pdf');
                 $source = $tempFetchedPath;
             } else {

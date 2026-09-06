@@ -78,13 +78,17 @@ class PakasirService
 
         // If no API key configured (development/sandbox mock fallback)
         if (empty($this->apiKey)) {
-            // If in sandbox mode without real key, consider verified if simulated
+            if (app()->environment('production')) {
+                throw new Exception('Sistem pembayaran Pakasir belum dikonfigurasi (API key tidak ditemukan).');
+            }
+
+            // Only in local/testing environment without key, allow simulation
             return [
-                'verified' => true,
-                'status' => 'completed',
+                'verified' => false,
+                'status' => 'unconfigured',
                 'order_id' => $orderId,
                 'amount' => (float) $amountInt,
-                'raw' => ['simulated' => true],
+                'raw' => ['simulated' => false, 'reason' => 'missing_api_key'],
             ];
         }
 

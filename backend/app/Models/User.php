@@ -23,11 +23,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
-        'plan_id',
-        'daily_limit',
-        'unlimited',
-        'is_active',
     ];
 
     /**

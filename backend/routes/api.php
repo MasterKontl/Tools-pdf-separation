@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Route;
 // ==========================================
 // Health & System Information
 // ==========================================
-Route::get('/health', function () {
+Route::middleware(['auth.api', 'admin'])->get('/health', function () {
     $binPath = config('converter.bin_path', 'pdftoppm');
     $pdftoppmAvailable = false;
     $pdftoppmVersion = null;
