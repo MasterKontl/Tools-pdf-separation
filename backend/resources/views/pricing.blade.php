@@ -65,6 +65,11 @@
             --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: clip;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -129,17 +134,31 @@
         }
 
         .user-pill {
-            display: inline-flex; align-items: center; gap: 8px;
-            padding: 6px 14px; border-radius: var(--radius-sm);
-            background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.18);
-            color: #ffffff; text-decoration: none; font-size: 0.85rem; font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
             transition: background 0.15s;
         }
-        .user-pill:hover { background: rgba(255, 255, 255, 0.2); }
+        .user-pill:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
 
         .btn-nav-logout {
-            background: none; border: none; color: #CBD5E1; cursor: pointer;
-            font-size: 0.85rem; font-weight: 600; padding: 6px 10px;
+            background: transparent;
+            border: none;
+            color: #CBD5E1;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 6px 10px;
             transition: color 0.15s;
         }
         .btn-nav-logout:hover { color: #f87171; }
@@ -150,6 +169,186 @@
             transition: background 0.15s;
         }
         .btn-nav-login:hover { background: var(--accent-hover); }
+
+        /* Mobile Nav Toggle Button */
+        .btn-mobile-nav-toggle {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #FFFFFF;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn-mobile-nav-toggle:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        /* Mobile Drawer Panel */
+        .mobile-nav-panel {
+            display: none;
+            position: fixed;
+            top: 61px;
+            left: 0;
+            right: 0;
+            width: 100%;
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--nav-border);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
+            padding: 1rem 1.25rem 1.5rem;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 1rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .mobile-nav-panel.open {
+            display: flex;
+            animation: mobileNavSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes mobileNavSlide {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .mobile-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .mobile-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            color: var(--nav-item);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+        .mobile-nav-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #FFFFFF;
+        }
+        .mobile-nav-item.active {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60A5FA;
+            border-left: 3px solid #3B82F6;
+        }
+        .mobile-nav-item svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+        .mobile-user-section {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .mobile-user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.65rem 0.85rem;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .mobile-user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+        .mobile-user-meta {
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .mobile-user-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #FFFFFF;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mobile-user-email {
+            font-size: 0.78rem;
+            color: #94A3B8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mobile-btn-logout {
+            width: 100%;
+            padding: 0.65rem;
+            border-radius: var(--radius-sm);
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #FCA5A5;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.15s ease;
+        }
+        .mobile-btn-logout:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: #FFFFFF;
+        }
+        .mobile-auth-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .mobile-btn-primary {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            background: var(--accent);
+            color: #FFFFFF;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+        .mobile-btn-primary:hover {
+            background: var(--accent-hover);
+        }
+        .mobile-btn-secondary {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #FFFFFF;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+        .mobile-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.16);
+        }
 
         .main-container { width: 100%; max-width: 1160px; margin: 2.5rem auto; padding: 0 1.5rem; flex: 1; }
         .pricing-header { text-align: center; margin-bottom: 3rem; }
@@ -204,6 +403,40 @@
             color: var(--text-muted); cursor: default;
         }
         .btn-current-plan:hover { background: var(--surface-alt); }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0.75rem 1rem;
+            }
+            .nav-menu {
+                display: none;
+            }
+            .nav-user-actions .user-pill,
+            .nav-user-actions form,
+            .nav-user-actions .btn-nav-login {
+                display: none;
+            }
+            .btn-mobile-nav-toggle {
+                display: inline-flex;
+            }
+            .main-container {
+                padding: 0 1rem;
+                margin: 1.5rem auto;
+            }
+            .pricing-title {
+                font-size: clamp(1.6rem, 5vw, 2.1rem);
+            }
+            .pricing-sub {
+                font-size: 0.9rem;
+            }
+            .plans-grid {
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
+            }
+            .plan-card {
+                padding: 1.5rem 1.25rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -257,8 +490,72 @@
         @else
             <a href="{{ route('login') }}" class="btn-nav-login">Masuk / Daftar</a>
         @endauth
+
+        <button type="button" id="mobileNavToggleBtn" class="btn-mobile-nav-toggle" onclick="toggleMobileNav()" aria-label="Toggle Menu" aria-expanded="false">
+            <svg class="hamburger-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+            <svg class="close-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
     </div>
 </nav>
+
+{{-- Mobile Navigation Drawer --}}
+<div id="mobileNavPanel" class="mobile-nav-panel">
+    <div class="mobile-nav-links">
+        <a href="{{ route('converter.index') }}" class="mobile-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>PDF Tools (Converter)</span>
+        </a>
+        <a href="{{ route('separation.index') }}" class="mobile-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            <span>Color Separation</span>
+        </a>
+        <a href="{{ route('pricing.index') }}" class="mobile-nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="18"/></svg>
+            <span>Pricing & Kuota</span>
+        </a>
+        @auth
+            <a href="{{ route('dashboard') }}" class="mobile-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                <span>Dashboard User</span>
+            </a>
+        @endauth
+    </div>
+
+    <div class="mobile-user-section">
+        @auth
+            @if ($user)
+                <div class="mobile-user-card">
+                    <div class="mobile-user-avatar">{{ strtoupper(substr($user->name, 0, 1)) }}</div>
+                    <div class="mobile-user-meta">
+                        <div class="mobile-user-name">{{ $user->name }}</div>
+                        <div class="mobile-user-email">{{ $user->email }}</div>
+                    </div>
+                </div>
+                @if ($user->isAdmin())
+                    <a href="{{ route('admin.dashboard') }}" class="mobile-btn-secondary" style="border-color:rgba(234,179,8,0.35);color:#fde047;">
+                        🛡️ Buka Admin Panel
+                    </a>
+                @endif
+                <form action="{{ route('logout') }}" method="POST" style="width:100%;">
+                    @csrf
+                    <button type="submit" class="mobile-btn-logout">Keluar Akun</button>
+                </form>
+            @endif
+        @else
+            <div class="mobile-auth-actions">
+                <a href="{{ route('login') }}" class="mobile-btn-primary">Masuk Akun</a>
+                <a href="{{ route('register') }}" class="mobile-btn-secondary">Daftar</a>
+            </div>
+        @endauth
+    </div>
+</div>
 
 <div class="main-container">
     <div class="pricing-header">
@@ -357,6 +654,38 @@
             moonIcons.forEach(el => el.style.display = 'inline-block');
         }
     }
+
+    function toggleMobileNav() {
+        const panel = document.getElementById('mobileNavPanel');
+        const btn = document.getElementById('mobileNavToggleBtn');
+        if (!panel || !btn) return;
+        const isOpen = panel.classList.toggle('open');
+        btn.setAttribute('aria-expanded', isOpen);
+        const hamburger = btn.querySelector('.hamburger-icon');
+        const close = btn.querySelector('.close-icon');
+        if (hamburger && close) {
+            hamburger.style.display = isOpen ? 'none' : 'inline-block';
+            close.style.display = isOpen ? 'inline-block' : 'none';
+        }
+    }
+
+    document.addEventListener('click', (e) => {
+        const panel = document.getElementById('mobileNavPanel');
+        const btn = document.getElementById('mobileNavToggleBtn');
+        if (!panel || !btn) return;
+        if (panel.classList.contains('open') && !panel.contains(e.target) && !btn.contains(e.target)) {
+            toggleMobileNav();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const panel = document.getElementById('mobileNavPanel');
+            if (panel && panel.classList.contains('open')) {
+                toggleMobileNav();
+            }
+        }
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
         const current = document.documentElement.getAttribute('data-theme') || 'light';

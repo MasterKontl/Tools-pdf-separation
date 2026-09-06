@@ -86,6 +86,12 @@
             --modal-overlay: rgba(0, 0, 0, 0.75);
         }
 
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: clip;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
@@ -104,12 +110,14 @@
             padding: 1rem 2rem; border-bottom: 1px solid var(--nav-border);
             background: var(--nav-bg);
             position: sticky; top: 0; z-index: 50;
+            width: 100%; max-width: 100%;
             transition: background-color 0.2s ease, border-color 0.2s ease;
         }
 
         .nav-brand {
             display: flex; align-items: center; gap: 8px;
             font-size: 1.15rem; font-weight: 800; color: #ffffff; text-decoration: none;
+            flex-shrink: 0;
         }
 
         .nav-brand-badge {
@@ -128,8 +136,8 @@
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: var(--radius-sm);
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -143,10 +151,29 @@
             color: #FFFFFF;
         }
 
+        .btn-mobile-nav-toggle {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-sm);
+            width: 38px;
+            height: 38px;
+            align-items: center;
+            justify-content: center;
+            color: #F8FAFC;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+        .btn-mobile-nav-toggle:hover {
+            background: rgba(255, 255, 255, 0.22);
+            color: #FFFFFF;
+        }
+
         .btn-nav-login {
             padding: 7px 16px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 700;
             background: var(--accent); color: #ffffff; text-decoration: none;
-            transition: background 0.15s;
+            transition: background 0.15s; white-space: nowrap;
         }
         .btn-nav-login:hover { background: var(--accent-hover); }
 
@@ -155,16 +182,170 @@
             padding: 6px 14px; border-radius: var(--radius-sm);
             background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.18);
             color: #ffffff; text-decoration: none; font-size: 0.85rem; font-weight: 600;
-            transition: background 0.15s;
+            transition: background 0.15s; white-space: nowrap;
         }
         .user-pill:hover { background: rgba(255, 255, 255, 0.2); }
 
         .btn-nav-logout {
             background: none; border: none; color: #CBD5E1; cursor: pointer;
             font-size: 0.85rem; font-weight: 600; padding: 6px 10px;
-            transition: color 0.15s;
+            transition: color 0.15s; white-space: nowrap;
         }
         .btn-nav-logout:hover { color: #f87171; }
+
+        /* Mobile Navigation Drawer / Panel */
+        .mobile-nav-panel {
+            display: none;
+            position: fixed;
+            top: 61px;
+            left: 0;
+            right: 0;
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--nav-border);
+            padding: 1.25rem 1.25rem 1.5rem;
+            z-index: 49;
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transform: translateY(-8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+        }
+        .mobile-nav-panel.open {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .mobile-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 1.25rem;
+        }
+        .mobile-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            color: var(--nav-item);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+        .mobile-nav-item:hover, .mobile-nav-item.active {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .mobile-nav-item.active {
+            color: var(--accent);
+            background: var(--banner-bg);
+            font-weight: 700;
+        }
+        .mobile-nav-item svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+        .mobile-user-section {
+            border-top: 1px solid var(--nav-border);
+            padding-top: 1.15rem;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .mobile-user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-md);
+        }
+        .mobile-user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .mobile-user-meta {
+            overflow: hidden;
+            flex: 1;
+        }
+        .mobile-user-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #FFFFFF;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mobile-user-email {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mobile-auth-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .mobile-btn-primary {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            background: var(--primary);
+            color: #FFFFFF;
+            font-weight: 700;
+            font-size: 0.88rem;
+            text-align: center;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .mobile-btn-secondary {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #FFFFFF;
+            font-weight: 600;
+            font-size: 0.88rem;
+            text-align: center;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mobile-btn-logout {
+            width: 100%;
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #F87171;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .mobile-btn-logout:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
 
         /* Main Container */
         .container {
@@ -337,7 +518,152 @@
         .btn-modal-submit:hover { background: var(--secondary); }
 
         .footer { margin-top: 2.5rem; text-align: center; font-size: 0.8rem; color: var(--text-muted); }
-    </style>
+
+        /* Responsive Media Queries (Mobile First & Tablet) */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0.75rem 1rem;
+            }
+            .nav-menu {
+                display: none !important;
+            }
+            .nav-user-actions .user-pill,
+            .nav-user-actions .btn-nav-logout,
+            .nav-user-actions .btn-nav-login {
+                display: none !important;
+            }
+            .btn-mobile-nav-toggle {
+                display: inline-flex !important;
+            }
+            .mobile-nav-panel {
+                display: block;
+                top: 57px;
+            }
+            .container {
+                padding: 0 0.85rem;
+                margin: 1.25rem auto 2rem;
+                width: 100%;
+                max-width: 100%;
+            }
+            .header {
+                margin-bottom: 1.5rem;
+            }
+            .title {
+                font-size: clamp(1.6rem, 5.8vw, 2.1rem);
+                line-height: 1.22;
+                word-break: break-word;
+            }
+            .subtitle {
+                font-size: clamp(0.82rem, 3.2vw, 0.92rem);
+                line-height: 1.55;
+            }
+            .usage-banner {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+                padding: 0.85rem 1rem;
+            }
+            .upgrade-link {
+                align-self: flex-start;
+                display: inline-block;
+                padding-top: 2px;
+            }
+            .card {
+                padding: 1.35rem 1rem;
+                border-radius: var(--radius-md);
+            }
+            .drop-zone {
+                padding: 2rem 0.85rem 1.65rem;
+            }
+            .choose-widget {
+                width: 100%;
+                max-width: 320px;
+                display: flex;
+                justify-content: center;
+                margin-bottom: 1rem;
+            }
+            .split-btn {
+                width: 100%;
+            }
+            .split-btn-main {
+                flex: 1;
+                justify-content: center;
+                font-size: 0.95rem;
+                padding: 12px 14px;
+            }
+            .split-btn-toggle {
+                padding: 12px 14px;
+            }
+            .choose-dropdown {
+                width: calc(100vw - 2.5rem);
+                max-width: 300px;
+            }
+            .options-grid {
+                grid-template-columns: 1fr;
+                gap: 1.15rem;
+                margin: 1.35rem 0 1rem;
+            }
+            .segment-group {
+                width: 100%;
+                display: flex;
+                gap: 4px;
+            }
+            .segment-option {
+                flex: 1 1 0;
+                min-width: 0;
+            }
+            .segment-btn {
+                padding: 8px 2px;
+                min-height: 48px;
+            }
+            .segment-title {
+                font-size: 0.85rem;
+            }
+            .segment-desc {
+                font-size: 0.65rem;
+            }
+            .file-preview {
+                padding: 0.85rem 0.95rem;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .file-info {
+                min-width: 0;
+                flex: 1;
+            }
+            .file-details {
+                min-width: 0;
+                flex: 1;
+            }
+            .file-name {
+                max-width: 190px;
+                min-width: 0;
+                font-size: 0.86rem;
+            }
+            .modal-card {
+                width: calc(100% - 1.5rem);
+                max-width: 440px;
+                padding: 1.25rem 1rem;
+                border-radius: var(--radius-md);
+            }
+            .multi-page-note {
+                font-size: 0.78rem;
+                padding: 0.65rem 0.85rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .file-name {
+                max-width: 140px;
+            }
+            .split-btn-main {
+                font-size: 0.88rem;
+                padding: 10px 10px;
+            }
+            .split-btn-toggle {
+                padding: 10px 10px;
+            }
+        }
 </head>
 <body>
 
@@ -391,8 +717,70 @@
         @else
             <a href="{{ route('login') }}" class="btn-nav-login">Masuk / Daftar</a>
         @endauth
+
+        <button type="button" id="mobileNavToggleBtn" class="btn-mobile-nav-toggle" onclick="toggleMobileNav()" aria-label="Toggle Menu" aria-expanded="false">
+            <svg class="hamburger-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+            <svg class="close-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
     </div>
 </nav>
+
+{{-- Mobile Navigation Drawer --}}
+<div id="mobileNavPanel" class="mobile-nav-panel">
+    <div class="mobile-nav-links">
+        <a href="{{ route('converter.index') }}" class="mobile-nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>PDF Tools (Converter)</span>
+        </a>
+        <a href="{{ route('separation.index') }}" class="mobile-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            <span>Color Separation</span>
+        </a>
+        <a href="{{ route('pricing.index') }}" class="mobile-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="18"/></svg>
+            <span>Pricing & Kuota</span>
+        </a>
+        @auth
+            <a href="{{ route('dashboard') }}" class="mobile-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                <span>Dashboard User</span>
+            </a>
+        @endauth
+    </div>
+
+    <div class="mobile-user-section">
+        @auth
+            <div class="mobile-user-card">
+                <div class="mobile-user-avatar">{{ strtoupper(substr($user->name, 0, 1)) }}</div>
+                <div class="mobile-user-meta">
+                    <div class="mobile-user-name">{{ $user->name }}</div>
+                    <div class="mobile-user-email">{{ $user->email }}</div>
+                </div>
+            </div>
+            @if ($user->isAdmin())
+                <a href="{{ route('admin.dashboard') }}" class="mobile-btn-secondary" style="border-color:rgba(234,179,8,0.35);color:#fde047;">
+                    🛡️ Buka Admin Panel
+                </a>
+            @endif
+            <form action="{{ route('logout') }}" method="POST" style="width:100%;">
+                @csrf
+                <button type="submit" class="mobile-btn-logout">Keluar Akun</button>
+            </form>
+        @else
+            <div class="mobile-auth-actions">
+                <a href="{{ route('login') }}" class="mobile-btn-primary">Masuk Akun</a>
+                <a href="{{ route('register') }}" class="mobile-btn-secondary">Daftar</a>
+            </div>
+        @endauth
+    </div>
+</div>
 
 <div class="container">
     {{-- Header --}}
@@ -979,6 +1367,38 @@
     document.addEventListener('DOMContentLoaded', () => {
         const current = document.documentElement.getAttribute('data-theme') || 'light';
         updateThemeToggleIcons(current);
+    });
+
+    function toggleMobileNav() {
+        const panel = document.getElementById('mobileNavPanel');
+        const btn = document.getElementById('mobileNavToggleBtn');
+        if (!panel || !btn) return;
+        const isOpen = panel.classList.toggle('open');
+        btn.setAttribute('aria-expanded', isOpen);
+        const hamburger = btn.querySelector('.hamburger-icon');
+        const close = btn.querySelector('.close-icon');
+        if (hamburger && close) {
+            hamburger.style.display = isOpen ? 'none' : 'inline-block';
+            close.style.display = isOpen ? 'inline-block' : 'none';
+        }
+    }
+
+    document.addEventListener('click', (e) => {
+        const panel = document.getElementById('mobileNavPanel');
+        const btn = document.getElementById('mobileNavToggleBtn');
+        if (!panel || !btn) return;
+        if (panel.classList.contains('open') && !panel.contains(e.target) && !btn.contains(e.target)) {
+            toggleMobileNav();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const panel = document.getElementById('mobileNavPanel');
+            if (panel && panel.classList.contains('open')) {
+                toggleMobileNav();
+            }
+        }
     });
 </script>
 

@@ -97,6 +97,12 @@
             padding: 0;
         }
 
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: clip;
+        }
+
         body {
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-body);
@@ -870,6 +876,227 @@
             font-size: 0.82rem;
             color: var(--text-muted);
         }
+
+        .btn-mobile-nav-toggle {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-sm);
+            width: 38px;
+            height: 38px;
+            color: #FFFFFF;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+        .btn-mobile-nav-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .mobile-nav-panel {
+            display: none;
+            position: fixed;
+            top: 61px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--nav-bg);
+            z-index: 99;
+            flex-direction: column;
+            padding: 1.25rem 1rem;
+            gap: 1.25rem;
+            overflow-y: auto;
+            border-bottom: 1px solid var(--nav-border);
+            animation: slideDownNav 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .mobile-nav-panel.open {
+            display: flex;
+        }
+        @keyframes slideDownNav {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .mobile-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .mobile-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.85rem 1rem;
+            border-radius: var(--radius-md);
+            color: var(--nav-item);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            transition: all 0.15s ease;
+        }
+        .mobile-nav-item svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+        .mobile-nav-item:hover, .mobile-nav-item.active {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .mobile-user-section {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--nav-border);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .mobile-user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .mobile-user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .mobile-user-meta {
+            overflow: hidden;
+        }
+        .mobile-user-name {
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mobile-user-email {
+            color: #94A3B8;
+            font-size: 0.78rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mobile-btn-logout {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-align: center;
+        }
+        .mobile-auth-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .mobile-btn-primary {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            background: var(--accent);
+            color: #FFFFFF;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-align: center;
+            text-decoration: none;
+        }
+        .mobile-btn-secondary {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #FFFFFF;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0.75rem 1rem;
+            }
+            .nav-menu {
+                display: none;
+            }
+            .nav-user-actions .user-pill,
+            .nav-user-actions form,
+            .nav-user-actions .btn-nav-login {
+                display: none;
+            }
+            .btn-mobile-nav-toggle {
+                display: inline-flex;
+            }
+            .main-container {
+                padding: 0 0.85rem;
+                margin: 1.25rem auto 0;
+            }
+            .title {
+                font-size: clamp(1.4rem, 4.5vw, 1.85rem);
+            }
+            .subtitle {
+                font-size: 0.86rem;
+            }
+            .usage-banner {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .viewport-toolbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .channel-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .channel-right {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            .canvas-stage {
+                min-height: 280px;
+            }
+            .export-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            .btn-export-zip {
+                width: 100%;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -924,8 +1151,70 @@
         @else
             <a href="{{ route('login') }}" class="btn-nav-login">Masuk / Daftar</a>
         @endauth
+
+        <button type="button" id="mobileNavToggleBtn" class="btn-mobile-nav-toggle" onclick="toggleMobileNav()" aria-label="Toggle Menu" aria-expanded="false">
+            <svg class="hamburger-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+            <svg class="close-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
     </div>
 </nav>
+
+{{-- Mobile Navigation Drawer --}}
+<div id="mobileNavPanel" class="mobile-nav-panel">
+    <div class="mobile-nav-links">
+        <a href="{{ route('converter.index') }}" class="mobile-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>PDF Tools (Converter)</span>
+        </a>
+        <a href="{{ route('separation.index') }}" class="mobile-nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            <span>Color Separation</span>
+        </a>
+        <a href="{{ route('pricing.index') }}" class="mobile-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="18"/></svg>
+            <span>Pricing & Kuota</span>
+        </a>
+        @auth
+            <a href="{{ route('dashboard') }}" class="mobile-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                <span>Dashboard User</span>
+            </a>
+        @endauth
+    </div>
+
+    <div class="mobile-user-section">
+        @auth
+            <div class="mobile-user-card">
+                <div class="mobile-user-avatar">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>
+                <div class="mobile-user-meta">
+                    <div class="mobile-user-name">{{ Auth::user()->name }}</div>
+                    <div class="mobile-user-email">{{ Auth::user()->email }}</div>
+                </div>
+            </div>
+            @if (Auth::user()->isAdmin())
+                <a href="{{ route('admin.dashboard') }}" class="mobile-btn-secondary" style="border-color:rgba(234,179,8,0.35);color:#fde047;">
+                    🛡️ Buka Admin Panel
+                </a>
+            @endif
+            <form action="{{ route('logout') }}" method="POST" style="width:100%;">
+                @csrf
+                <button type="submit" class="mobile-btn-logout">Keluar Akun</button>
+            </form>
+        @else
+            <div class="mobile-auth-actions">
+                <a href="{{ route('login') }}" class="mobile-btn-primary">Masuk Akun</a>
+                <a href="{{ route('register') }}" class="mobile-btn-secondary">Daftar</a>
+            </div>
+        @endauth
+    </div>
+</div>
 
 <div class="main-container">
     {{-- Header --}}
@@ -1497,6 +1786,38 @@
             moonIcons.forEach(el => el.style.display = 'inline-block');
         }
     }
+
+    function toggleMobileNav() {
+        const panel = document.getElementById('mobileNavPanel');
+        const btn = document.getElementById('mobileNavToggleBtn');
+        if (!panel || !btn) return;
+        const isOpen = panel.classList.toggle('open');
+        btn.setAttribute('aria-expanded', isOpen);
+        const hamburger = btn.querySelector('.hamburger-icon');
+        const close = btn.querySelector('.close-icon');
+        if (hamburger && close) {
+            hamburger.style.display = isOpen ? 'none' : 'inline-block';
+            close.style.display = isOpen ? 'inline-block' : 'none';
+        }
+    }
+
+    document.addEventListener('click', (e) => {
+        const panel = document.getElementById('mobileNavPanel');
+        const btn = document.getElementById('mobileNavToggleBtn');
+        if (!panel || !btn) return;
+        if (panel.classList.contains('open') && !panel.contains(e.target) && !btn.contains(e.target)) {
+            toggleMobileNav();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const panel = document.getElementById('mobileNavPanel');
+            if (panel && panel.classList.contains('open')) {
+                toggleMobileNav();
+            }
+        }
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
         const current = document.documentElement.getAttribute('data-theme') || 'light';

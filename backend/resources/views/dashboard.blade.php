@@ -83,6 +83,12 @@
             --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: clip;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -126,6 +132,109 @@
         .nav-item { color: var(--nav-item); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 0.15s; }
         .nav-item:hover, .nav-item.active { color: var(--nav-item-active); }
         .nav-user-actions { display: flex; align-items: center; gap: 10px; }
+
+        .btn-mobile-nav-toggle {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-sm);
+            width: 36px;
+            height: 36px;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            cursor: pointer;
+            padding: 0;
+            flex-shrink: 0;
+            transition: all 0.15s ease;
+        }
+        .btn-mobile-nav-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .mobile-nav-panel {
+            display: none;
+            position: fixed;
+            top: 61px;
+            left: 0;
+            width: 100%;
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--nav-border);
+            padding: 1.25rem 1.5rem 1.75rem;
+            z-index: 49;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            flex-direction: column;
+            gap: 12px;
+        }
+        .mobile-nav-panel.open {
+            display: flex;
+            animation: mobileNavSlideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes mobileNavSlideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .mobile-nav-panel .mobile-nav-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            color: var(--nav-item);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            transition: all 0.15s ease;
+        }
+        .mobile-nav-panel .mobile-nav-link:hover,
+        .mobile-nav-panel .mobile-nav-link.active {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .mobile-nav-panel .mobile-nav-link.active::after {
+            content: "•";
+            color: var(--accent);
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+        .mobile-nav-user-box {
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .mobile-nav-user-box .user-name-tag {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .mobile-nav-logout-btn {
+            width: 100%;
+            text-align: center;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 0.65rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .mobile-nav-logout-btn:hover {
+            background: rgba(239, 68, 68, 0.25);
+            color: #ffffff;
+        }
 
         .btn-theme-toggle {
             background: rgba(255, 255, 255, 0.1);
@@ -212,6 +321,45 @@
         .status-pending { background: var(--badge-pending-bg); color: var(--badge-pending-text); border: 1px solid var(--badge-pending-border); }
         .alert-success { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success-text); padding: 0.9rem 1.2rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; font-size: 0.9rem; }
         .alert-info { background: var(--banner-bg); border: 1px solid var(--banner-border); color: var(--banner-text); padding: 0.9rem 1.2rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; font-size: 0.9rem; }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0.85rem 1.25rem;
+            }
+            .nav-menu {
+                display: none !important;
+            }
+            .btn-mobile-nav-toggle {
+                display: inline-flex;
+            }
+            .nav-user-actions .user-pill,
+            .nav-user-actions .btn-nav-logout {
+                display: none;
+            }
+            .main-container {
+                margin: 1.5rem auto;
+                padding: 0 1rem;
+            }
+            .header-section {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            .header-section .btn-upgrade {
+                width: 100%;
+                text-align: center;
+            }
+            .user-greeting {
+                font-size: 1.45rem;
+            }
+            .table-card {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            table {
+                min-width: 540px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -246,6 +394,17 @@
                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
             </svg>
         </button>
+        <button type="button" id="mobileNavToggleBtn" class="btn-mobile-nav-toggle" onclick="toggleMobileNav()" aria-label="Buka Menu Navigasi" aria-expanded="false">
+            <svg class="hamburger-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+            <svg class="close-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
         @if ($user->isAdmin())
             <a href="{{ route('admin.dashboard') }}" class="user-pill" style="border-color:rgba(234,179,8,0.35);color:#fde047;">
                 🛡️ Admin Panel
@@ -260,6 +419,37 @@
         </form>
     </div>
 </nav>
+
+{{-- Mobile Navigation Drawer --}}
+<div id="mobileNavPanel" class="mobile-nav-panel">
+    <a href="{{ route('converter.index') }}" class="mobile-nav-link">
+        <span>PDF Tools</span>
+    </a>
+    <a href="{{ route('separation.index') }}" class="mobile-nav-link">
+        <span>Color Separation</span>
+    </a>
+    <a href="{{ route('pricing.index') }}" class="mobile-nav-link">
+        <span>Pricing</span>
+    </a>
+    <a href="{{ route('dashboard') }}" class="mobile-nav-link active">
+        <span>Dashboard</span>
+    </a>
+    <div class="mobile-nav-user-box">
+        <div class="user-name-tag">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>{{ $user->name }}</span>
+        </div>
+        @if ($user->isAdmin())
+            <a href="{{ route('admin.dashboard') }}" class="mobile-nav-link" style="color:#fde047;border-color:rgba(234,179,8,0.3);">
+                <span>🛡️ Admin Panel</span>
+            </a>
+        @endif
+        <form action="{{ route('logout') }}" method="POST">
+            @csrf
+            <button type="submit" class="mobile-nav-logout-btn">Keluar dari Akun</button>
+        </form>
+    </div>
+</div>
 
 <div class="main-container">
     @if (session('success'))
@@ -387,6 +577,38 @@
             moonIcons.forEach(el => el.style.display = 'inline-block');
         }
     }
+
+    function toggleMobileNav() {
+        const panel = document.getElementById('mobileNavPanel');
+        const btn = document.getElementById('mobileNavToggleBtn');
+        if (!panel || !btn) return;
+        const isOpen = panel.classList.toggle('open');
+        btn.setAttribute('aria-expanded', isOpen);
+        const hamburger = btn.querySelector('.hamburger-icon');
+        const close = btn.querySelector('.close-icon');
+        if (hamburger && close) {
+            hamburger.style.display = isOpen ? 'none' : 'inline-block';
+            close.style.display = isOpen ? 'inline-block' : 'none';
+        }
+    }
+
+    document.addEventListener('click', (e) => {
+        const panel = document.getElementById('mobileNavPanel');
+        const btn = document.getElementById('mobileNavToggleBtn');
+        if (!panel || !btn) return;
+        if (panel.classList.contains('open') && !panel.contains(e.target) && !btn.contains(e.target)) {
+            toggleMobileNav();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const panel = document.getElementById('mobileNavPanel');
+            if (panel && panel.classList.contains('open')) {
+                toggleMobileNav();
+            }
+        }
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
         const current = document.documentElement.getAttribute('data-theme') || 'light';
