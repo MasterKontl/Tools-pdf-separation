@@ -12,6 +12,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PdfConverterController;
 use App\Http\Controllers\PricingController;
 use App\Http\Controllers\SeparationController;
+use App\Http\Controllers\UpscalerController;
 use Illuminate\Support\Facades\Route;
 
 // ==========================================
@@ -28,6 +29,13 @@ Route::get('/separation', [SeparationController::class, 'index'])->name('separat
 Route::post('/separation', [SeparationController::class, 'process'])->name('separation.process');
 Route::get('/separation/preview/{token}/{channel}', [SeparationController::class, 'preview'])->name('separation.preview');
 Route::get('/separation/download/{token}/{channel?}', [SeparationController::class, 'download'])->name('separation.download');
+
+// ==========================================
+// V3 - Image Upscaler
+// ==========================================
+Route::get('/upscaler', [UpscalerController::class, 'index'])->name('upscaler.index');
+Route::post('/upscaler/process', [UpscalerController::class, 'process'])->name('upscaler.process');
+Route::get('/upscaler/download/{tempId}/{ext}', [UpscalerController::class, 'download'])->name('upscaler.download');
 
 // ==========================================
 // Pricing & Public Payment

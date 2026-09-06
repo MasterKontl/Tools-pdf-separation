@@ -466,6 +466,7 @@
     <div class="nav-menu">
         <a href="{{ route('converter.index') }}" class="nav-item">PDF Tools</a>
         <a href="{{ route('separation.index') }}" class="nav-item">Color Separation</a>
+        <a href="{{ route('upscaler.index') }}" class="nav-item">Upscaler</a>
         <a href="{{ route('pricing.index') }}" class="nav-item">Pricing</a>
         <a href="{{ route('dashboard') }}" class="nav-item active">Dashboard</a>
     </div>
@@ -519,6 +520,9 @@
     </a>
     <a href="{{ route('separation.index') }}" class="mobile-nav-link">
         <span>Color Separation</span>
+    </a>
+    <a href="{{ route('upscaler.index') }}" class="mobile-nav-link">
+        <span>Upscaler</span>
     </a>
     <a href="{{ route('pricing.index') }}" class="mobile-nav-link">
         <span>Pricing</span>
