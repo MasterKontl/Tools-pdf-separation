@@ -103,4 +103,16 @@ class User extends Authenticatable
         $planSlug = strtolower((string) ($this->plan?->slug ?? ''));
         return in_array($planSlug, ['pro', 'unlimited'], true);
     }
+
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new \App\Notifications\ResetPasswordNotification($token));
+    }
 }
+

@@ -62,8 +62,12 @@ class PasswordResetController extends Controller
                 ]
             );
 
-            // In production with mail configured: send reset email here securely.
-            // Reset URL and token are NEVER leaked to session, view, or logs.
+            try {
+                $user->sendPasswordResetNotification($token);
+            } catch (\Throwable $e) {
+                // Log exception safely without exposing token or secrets
+                report($e);
+            }
         }
 
         return back()->with('status', $genericMessage);

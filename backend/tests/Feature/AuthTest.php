@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Notifications\ResetPasswordNotification;
 use Database\Seeders\PlanSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 
@@ -217,4 +219,86 @@ class AuthTest extends TestCase
         $throttledResponse->assertRedirect('/forgot-password');
         $throttledResponse->assertSessionHas('status', 'Jika alamat email terdaftar, tautan pengaturan ulang kata sandi akan dikirimkan ke email Anda.');
     }
+
+    public function test_forgot_password_sends_notification_to_existing_user(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->create([
+            'email' => 'registered@example.com',
+        ]);
+
+        $response = $this->from('/forgot-password')->post('/forgot-password', [
+            'email' => 'registered@example.com',
+        ]);
+
+        $response->assertRedirect('/forgot-password');
+        $response->assertSessionHas('status', 'Jika alamat email terdaftar, tautan pengaturan ulang kata sandi akan dikirimkan ke email Anda.');
+        $response->assertSessionMissing('reset_url');
+        $response->assertSessionMissing('token');
+
+        Notification::assertSentTo($user, ResetPasswordNotification::class, function (ResetPasswordNotification $notification) use ($user) {
+            $mail = $notification->toMail($user);
+            return !empty($notification->token)
+                && str_contains($mail->subject, 'Tools DKV')
+                && str_contains($mail->actionUrl, $notification->token)
+                && str_contains($mail->actionUrl, urlencode($user->email));
+        });
+    }
+
+    public function test_forgot_password_does_not_send_notification_to_non_existing_user(): void
+    {
+        Notification::fake();
+
+        $response = $this->from('/forgot-password')->post('/forgot-password', [
+            'email' => 'ghost@example.com',
+        ]);
+
+        $response->assertRedirect('/forgot-password');
+        $response->assertSessionHas('status', 'Jika alamat email terdaftar, tautan pengaturan ulang kata sandi akan dikirimkan ke email Anda.');
+        $response->assertSessionMissing('reset_url');
+        $response->assertSessionMissing('token');
+
+        Notification::assertNothingSent();
+    }
+
+    public function test_reset_password_notification_mail_content_meets_requirements(): void
+    {
+        $user = User::factory()->create([
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+        ]);
+
+        $notification = new ResetPasswordNotification('sample-reset-token-12345');
+        $mail = $notification->toMail($user);
+
+        $this->assertStringContainsString('Atur Ulang Kata Sandi', $mail->subject);
+        $this->assertStringContainsString('Tools DKV', $mail->subject);
+        $this->assertEquals('Atur Ulang Kata Sandi', $mail->actionText);
+        $this->assertStringContainsString('sample-reset-token-12345', $mail->actionUrl);
+        $this->assertStringContainsString(urlencode('john@example.com'), $mail->actionUrl);
+
+        $rendered = (string) $mail->render();
+        $this->assertStringContainsString('Tools DKV', $rendered);
+        $this->assertStringContainsString('Atur Ulang Kata Sandi', $rendered);
+        $this->assertStringContainsString('menit', $rendered);
+        $this->assertStringContainsString('sample-reset-token-12345', $rendered);
+    }
+
+    public function test_password_reset_url_uses_https_in_production(): void
+    {
+        config(['app.url' => 'https://pdf-converter-app-production.up.railway.app']);
+        \Illuminate\Support\Facades\URL::forceRootUrl('https://pdf-converter-app-production.up.railway.app');
+        \Illuminate\Support\Facades\URL::forceScheme('https');
+
+        $user = User::factory()->create([
+            'email' => 'https_test@example.com',
+        ]);
+
+        $notification = new ResetPasswordNotification('secure-token-abc');
+        $mail = $notification->toMail($user);
+
+        $this->assertStringStartsWith('https://pdf-converter-app-production.up.railway.app/reset-password/secure-token-abc', $mail->actionUrl);
+    }
 }
+
