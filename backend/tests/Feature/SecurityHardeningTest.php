@@ -103,18 +103,17 @@ class SecurityHardeningTest extends TestCase
     }
 
     /**
-     * Test Fix 6: Health check endpoint requires admin authentication.
+     * Test Fix 6: Health check returns minimal status without sensitive fingerprinting.
      */
-    public function test_health_check_requires_admin_auth(): void
+    public function test_health_check_returns_minimal_info(): void
     {
-        // Unauthenticated guest -> 401 or 403
-        $responseGuest = $this->getJson('/api/health');
-        $responseGuest->assertStatus(401);
-
-        // Regular non-admin user -> 403
-        $regularUser = User::factory()->create(['role' => 'USER']);
-        $responseRegular = $this->actingAs($regularUser)->getJson('/api/health');
-        $responseRegular->assertStatus(403);
+        $response = $this->getJson('/api/health');
+        $response->assertStatus(200);
+        $response->assertJson(['status' => 'ok', 'service' => 'Tools DKV API']);
+        
+        // Ensure sensitive version fingerprinting is NOT exposed to public
+        $this->assertArrayNotHasKey('php_version', $response->json());
+        $this->assertArrayNotHasKey('pdftoppm_version', $response->json());
     }
 
     /**

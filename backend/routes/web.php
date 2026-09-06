@@ -94,31 +94,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/subscriptions', [AdminSubscriptionController::class, 'index'])->name('subscriptions.index');
 });
 
-Route::middleware(['auth', 'admin'])->get('/health', function () {
-    $binPath = config('converter.bin_path', 'pdftoppm');
-    $pdftoppmAvailable = false;
-    $pdftoppmVersion = null;
-
-    $process = new \Symfony\Component\Process\Process([$binPath, '-v']);
-    try {
-        $process->run();
-        $output = trim($process->getErrorOutput() ?: $process->getOutput());
-        if (str_contains(strtolower($output), 'pdftoppm version')) {
-            $pdftoppmAvailable = true;
-            $pdftoppmVersion = explode("\n", $output)[0] ?? $output;
-        }
-    } catch (\Throwable) {
-        $pdftoppmAvailable = false;
-    }
-
+Route::get('/health', function () {
     return response()->json([
         'status' => 'ok',
         'service' => 'Tools DKV API',
-        'php_version' => PHP_VERSION,
-        'zip_available' => extension_loaded('zip'),
-        'ziparchive_available' => class_exists(\ZipArchive::class),
-        'pdftoppm_available' => $pdftoppmAvailable,
-        'pdftoppm_version' => $pdftoppmVersion,
         'timestamp' => now()->toIso8601String(),
     ]);
 });
