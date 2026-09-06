@@ -93,11 +93,6 @@
         @if (session('status'))
             <div class="alert-success">
                 {{ session('status') }}
-                @if (session('reset_url'))
-                    <div style="margin-top: 8px;">
-                        <a href="{{ session('reset_url') }}" class="link-text" style="color:var(--primary); font-weight: 700;">Klik di sini untuk langsung mengatur ulang kata sandi &rarr;</a>
-                    </div>
-                @endif
             </div>
         @endif
 

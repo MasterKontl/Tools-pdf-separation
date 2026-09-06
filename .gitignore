@@ -49,3 +49,6 @@ frontend/.next/
 frontend/out/
 frontend/.env.local
 frontend/.env.*.local
+
+# Agent Customizations & Plugins
+/.agents/plugins/cybersecurity/

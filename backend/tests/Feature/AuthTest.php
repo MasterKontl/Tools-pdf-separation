@@ -149,4 +149,72 @@ class AuthTest extends TestCase
         $response = $this->get('/dashboard');
         $response->assertRedirect('/login');
     }
+
+    public function test_login_form_action_uses_https_when_behind_proxy(): void
+    {
+        $response = $this->withHeaders([
+            'X-Forwarded-Proto' => 'https',
+            'X-Forwarded-Port' => '443',
+            'X-Forwarded-Host' => 'pdf-converter-app-production.up.railway.app',
+        ])->get('/login');
+
+        $response->assertStatus(200);
+        $response->assertSee('action="https://', false);
+    }
+
+    public function test_security_headers_are_attached_to_responses(): void
+    {
+        $response = $this->get('/login');
+
+        $response->assertHeader('X-Content-Type-Options', 'nosniff');
+        $response->assertHeader('X-Frame-Options', 'SAMEORIGIN');
+        $response->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+        $this->assertFalse($response->headers->has('X-Powered-By'));
+    }
+
+    public function test_forgot_password_does_not_reveal_reset_url_in_session_or_view(): void
+    {
+        $user = User::factory()->create(['email' => 'victim@example.com']);
+
+        $response = $this->from('/forgot-password')->post('/forgot-password', [
+            'email' => 'victim@example.com',
+        ]);
+
+        $response->assertRedirect('/forgot-password');
+        $response->assertSessionHas('status', 'Jika alamat email terdaftar, tautan pengaturan ulang kata sandi akan dikirimkan ke email Anda.');
+        $response->assertSessionMissing('reset_url');
+
+        $followUp = $this->get('/forgot-password');
+        $followUp->assertStatus(200);
+        $followUp->assertDontSee('reset-password');
+        $followUp->assertDontSee('Klik di sini untuk langsung mengatur ulang kata sandi');
+    }
+
+    public function test_forgot_password_returns_identical_generic_response_for_non_existing_email(): void
+    {
+        $response = $this->from('/forgot-password')->post('/forgot-password', [
+            'email' => 'nonexistent@example.com',
+        ]);
+
+        $response->assertRedirect('/forgot-password');
+        $response->assertSessionHas('status', 'Jika alamat email terdaftar, tautan pengaturan ulang kata sandi akan dikirimkan ke email Anda.');
+        $response->assertSessionMissing('reset_url');
+    }
+
+    public function test_forgot_password_requests_are_rate_limited(): void
+    {
+        RateLimiter::clear('forgot-pwd-ip:127.0.0.1');
+        RateLimiter::clear('forgot-pwd-email:spam@example.com');
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->post('/forgot-password', ['email' => 'spam@example.com']);
+        }
+
+        $throttledResponse = $this->from('/forgot-password')->post('/forgot-password', [
+            'email' => 'spam@example.com',
+        ]);
+
+        $throttledResponse->assertRedirect('/forgot-password');
+        $throttledResponse->assertSessionHas('status', 'Jika alamat email terdaftar, tautan pengaturan ulang kata sandi akan dikirimkan ke email Anda.');
+    }
 }

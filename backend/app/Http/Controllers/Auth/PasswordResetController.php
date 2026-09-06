@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\View\View;
@@ -24,7 +25,7 @@ class PasswordResetController extends Controller
     }
 
     /**
-     * Send password reset link / token.
+     * Send password reset link / token with rate limiting and constant response.
      */
     public function sendResetLink(Request $request): RedirectResponse
     {
@@ -35,7 +36,20 @@ class PasswordResetController extends Controller
             'email.email' => 'Format email tidak valid.',
         ]);
 
-        $user = User::where('email', $request->input('email'))->first();
+        $genericMessage = 'Jika alamat email terdaftar, tautan pengaturan ulang kata sandi akan dikirimkan ke email Anda.';
+
+        $email = Str::lower($request->input('email'));
+        $emailKey = 'forgot-pwd-email:' . Str::transliterate($email);
+        $ipKey = 'forgot-pwd-ip:' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($ipKey, 5) || RateLimiter::tooManyAttempts($emailKey, 3)) {
+            return back()->with('status', $genericMessage);
+        }
+
+        RateLimiter::hit($ipKey, 600);
+        RateLimiter::hit($emailKey, 600);
+
+        $user = User::where('email', $email)->first();
 
         if ($user) {
             $token = Str::random(64);
@@ -48,12 +62,11 @@ class PasswordResetController extends Controller
                 ]
             );
 
-            // In local/production we store the reset token; we can provide reset route directly or via status message
-            return back()->with('status', 'Tautan pengaturan ulang kata sandi telah disiapkan.')
-                         ->with('reset_url', route('password.reset', ['token' => $token, 'email' => $user->email]));
+            // In production with mail configured: send reset email here securely.
+            // Reset URL and token are NEVER leaked to session, view, or logs.
         }
 
-        return back()->with('status', 'Jika email terdaftar, instruksi reset kata sandi telah dikirim.');
+        return back()->with('status', $genericMessage);
     }
 
     /**
