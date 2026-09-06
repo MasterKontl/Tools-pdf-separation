@@ -106,6 +106,9 @@ Route::get('/health', function () {
     return response()->json([
         'status' => 'ok',
         'service' => 'Tools DKV API',
+        'php_version' => PHP_VERSION,
+        'zip_available' => extension_loaded('zip'),
+        'ziparchive_available' => class_exists(\ZipArchive::class),
         'pdftoppm_available' => $pdftoppmAvailable,
         'pdftoppm_version' => $pdftoppmVersion,
         'timestamp' => now()->toIso8601String(),
