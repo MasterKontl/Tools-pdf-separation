@@ -26,9 +26,27 @@ use Illuminate\Support\Facades\Route;
 // Health & System Information
 // ==========================================
 Route::get('/health', function () {
+    $binPath = config('converter.bin_path', 'pdftoppm');
+    $pdftoppmAvailable = false;
+    $pdftoppmVersion = null;
+
+    $process = new \Symfony\Component\Process\Process([$binPath, '-v']);
+    try {
+        $process->run();
+        $output = trim($process->getErrorOutput() ?: $process->getOutput());
+        if (str_contains(strtolower($output), 'pdftoppm version')) {
+            $pdftoppmAvailable = true;
+            $pdftoppmVersion = explode("\n", $output)[0] ?? $output;
+        }
+    } catch (\Throwable) {
+        $pdftoppmAvailable = false;
+    }
+
     return response()->json([
         'status' => 'ok',
         'service' => 'Tools DKV API',
+        'pdftoppm_available' => $pdftoppmAvailable,
+        'pdftoppm_version' => $pdftoppmVersion,
         'timestamp' => now()->toIso8601String(),
     ]);
 });

@@ -87,6 +87,11 @@ class ImageRasterService
             if (!$process->isSuccessful()) {
                 $errorOutput = trim($process->getErrorOutput() ?: $process->getOutput());
                 File::deleteDirectory($tempDir);
+
+                if ($process->getExitCode() === 127 || str_contains(strtolower($errorOutput), 'not found')) {
+                    throw new Exception("Engine konversi PDF (pdftoppm/poppler-utils) tidak tersedia pada server.");
+                }
+
                 throw new Exception("Rasterisasi PDF gagal. Pastikan file PDF valid dan tidak terenkripsi/rusak. Detail: " . ($errorOutput ?: 'Unknown error'));
             }
 

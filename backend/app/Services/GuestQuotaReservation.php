@@ -19,10 +19,12 @@ class GuestQuotaReservation
      */
     public function release(): void
     {
-        // Decrement session count
-        $sessionCount = (int) $this->request->session()->get('guest_usage_' . $this->date, 0);
-        if ($sessionCount > 0) {
-            $this->request->session()->put('guest_usage_' . $this->date, $sessionCount - 1);
+        // Decrement session count if session is available
+        if ($this->request->hasSession()) {
+            $sessionCount = (int) $this->request->session()->get('guest_usage_' . $this->date, 0);
+            if ($sessionCount > 0) {
+                $this->request->session()->put('guest_usage_' . $this->date, $sessionCount - 1);
+            }
         }
 
         // Decrement cache count
