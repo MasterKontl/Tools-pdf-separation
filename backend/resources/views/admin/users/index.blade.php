@@ -6,12 +6,13 @@
 <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
         <form method="GET" action="{{ route('admin.users.index') }}" style="display:flex;gap:10px;">
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama atau email..." style="padding:0.6rem 1rem;background:rgba(0,0,0,0.3);border:1px solid var(--bg-card-border);border-radius:var(--radius-md);color:#fff;font-family:inherit;outline:none;">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama atau email..." style="padding:0.6rem 1rem;background:rgba(0,0,0,0.3);border:1px solid var(--bg-card-border);border-radius:var(--radius-md);color:#fff;outline:none;">
             <button type="submit" class="btn-action btn-primary">Cari</button>
         </form>
     </div>
 
-    <table>
+    <div class="responsive-table">
+        <table>
         <thead>
             <tr>
                 <th>Pengguna</th>
@@ -70,6 +71,7 @@
             @endforeach
         </tbody>
     </table>
+    </div>
 
     <div style="margin-top:1.5rem;">
         {{ $users->links() }}

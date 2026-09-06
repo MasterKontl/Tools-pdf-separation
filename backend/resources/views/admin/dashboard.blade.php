@@ -11,11 +11,11 @@
     }
     .metric-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.4rem; }
     .metric-value { font-size: 1.85rem; font-weight: 800; color: #fff; }
-    .recent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-    @media (max-width: 900px) { .recent-grid { grid-template-columns: 1fr; } }
+    .responsive-table { width: 100%; overflow-x: auto; }
+    @media (max-width: 768px) { .recent-grid { grid-template-columns: 1fr; } }
 </style>
 
-{{-- Metrics Row --}}
+ {{-- Metrics Row --}}
 <div class="metrics-grid">
     <div class="metric-card">
         <div class="metric-label">Total Pengguna</div>
@@ -47,7 +47,8 @@
     {{-- Recent Users --}}
     <div class="card">
         <h3 style="font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:1rem;">Pengguna Terbaru</h3>
-        <table>
+        <div class="responsive-table">
+            <table>
             <thead>
                 <tr>
                     <th>Nama</th>

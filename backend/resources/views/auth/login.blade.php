@@ -82,7 +82,7 @@
             border-color: var(--accent);
             color: var(--accent);
         }
-        .auth-container { width: 100%; max-width: 420px; }
+        .auth-container { width: 100%; max-width: 420px; margin: 0 auto; padding: 1.5rem; }
         .logo-box { text-align: center; margin-bottom: 2rem; }
         .logo-badge {
             display: inline-flex; align-items: center; gap: 6px;
@@ -105,7 +105,7 @@
         .form-input {
             width: 100%; padding: 0.85rem 1rem;
             background: var(--bg-body); border: 1px solid var(--border);
-            border-radius: var(--radius-md); color: var(--text-main); font-family: inherit; font-size: 0.92rem;
+            border-radius: var(--radius-md); color: var(--text-main); font-family: inherit; font-size: 1rem;
             outline: none; transition: border-color 0.15s;
         }
         .form-input:focus { border-color: var(--accent); }

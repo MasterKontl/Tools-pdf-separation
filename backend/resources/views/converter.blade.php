@@ -355,11 +355,12 @@
 
         .header { text-align: center; margin-bottom: 2rem; }
         .title {
-            font-size: 2.3rem; font-weight: 800; letter-spacing: -0.025em;
+            font-size: clamp(1.8rem, 5vw, 2.3rem); font-weight: 800; letter-spacing: -0.025em;
             color: var(--text-main);
             margin-bottom: 0.5rem;
+            word-break: break-word;
         }
-        .subtitle { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; max-width: 540px; margin: 0 auto; }
+        .subtitle { color: var(--text-muted); font-size: clamp(0.85rem, 3vw, 0.95rem); line-height: 1.5; max-width: 100%; }
 
         /* Usage Banner */
         .usage-banner {
@@ -396,15 +397,24 @@
         .drop-zone {
             border: 2px dashed var(--dropzone-border);
             border-radius: var(--radius-md);
-            padding: 2.75rem 1.5rem 2.25rem;
+            padding: 2rem 1rem;
             text-align: center;
             transition: all 0.2s ease;
             background: var(--dropzone-bg);
             position: relative;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
         }
         .drop-zone.dragover {
             border-color: var(--accent);
             background: var(--banner-bg);
+        }
+        .drop-zone-text {
+            color: var(--text-muted);
+            pointer-events: none;
         }
 
         /* Split Button Widget */
@@ -652,6 +662,24 @@
             }
         }
 
+        @media (max-width: 480px) {
+            .modal-card input, .modal-card select, .modal-card textarea {
+                font-size: 1rem !important; /* Mencegah auto-zoom di iOS Safari */
+            }
+            .modal-actions {
+                flex-direction: column-reverse;
+                gap: 8px;
+            }
+            .modal-actions button, .modal-actions a {
+                width: 100%;
+                justify-content: center;
+                min-height: 44px;
+            }
+            .btn-convert {
+                min-height: 46px;
+            }
+        }
+
         @media (max-width: 400px) {
             .file-name {
                 max-width: 140px;
@@ -664,6 +692,7 @@
                 padding: 10px 10px;
             }
         }
+    </style>
 </head>
 <body>
 
@@ -897,7 +926,7 @@
                     </div>
                 </div>
 
-                <div class="drop-text-primary">atau tarik & lepas (drag and drop) file PDF ke sini</div>
+                <div class="drop-text-primary">Sentuh untuk memilih file PDF<br>atau tarik & lepas (drag and drop) ke sini</div>
                 <div class="drop-text-secondary">Maksimum ukuran dokumen hingga 100 MB</div>
             </div>
 

@@ -49,6 +49,7 @@
             --radius-md: 8px;
             --radius-sm: 6px;
             --shadow-card: 0 4px 16px rgba(30, 58, 95, 0.08);
+            --touch-target: 44px;
         }
 
         [data-theme="dark"] {
@@ -155,12 +156,12 @@
         .mobile-nav-panel {
             display: none;
             position: fixed;
-            top: 61px;
+            top: var(--navbar-height, 61px);
             left: 0;
             width: 100%;
             background: var(--nav-bg);
             border-bottom: 1px solid var(--nav-border);
-            padding: 1.25rem 1.5rem 1.75rem;
+            padding: 1rem var(--radius-md);
             z-index: 49;
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
             backdrop-filter: blur(12px);
@@ -180,7 +181,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.75rem 1rem;
+            padding: 0.875rem 1rem;
             border-radius: var(--radius-md);
             color: var(--nav-item);
             text-decoration: none;
@@ -189,6 +190,7 @@
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid transparent;
             transition: all 0.15s ease;
+            min-height: var(--touch-target);
         }
         .mobile-nav-panel .mobile-nav-link:hover,
         .mobile-nav-panel .mobile-nav-link.active {
@@ -224,12 +226,14 @@
             background: rgba(239, 68, 68, 0.15);
             border: 1px solid rgba(239, 68, 68, 0.3);
             color: #fca5a5;
-            padding: 0.65rem;
+            padding: 0.75rem;
             border-radius: var(--radius-md);
             font-weight: 600;
             font-size: 0.88rem;
             cursor: pointer;
             transition: background 0.15s;
+            min-height: var(--touch-target);
+            line-height: calc(var(--touch-target) - 2px);
         }
         .mobile-nav-logout-btn:hover {
             background: rgba(239, 68, 68, 0.25);
@@ -322,9 +326,75 @@
         .alert-success { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success-text); padding: 0.9rem 1.2rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; font-size: 0.9rem; }
         .alert-info { background: var(--banner-bg); border: 1px solid var(--banner-border); color: var(--banner-text); padding: 0.9rem 1.2rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; font-size: 0.9rem; }
 
+        /* Mobile Transaction Cards & Responsive Helpers */
+        .desktop-table-view { display: block; }
+        .mobile-tx-list { display: none; }
+
+        .mobile-tx-card {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0.875rem var(--radius-md);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            transition: background-color 0.15s ease;
+            min-height: var(--touch-target);
+        }
+        .mobile-tx-card:last-child {
+            border-bottom: none;
+        }
+        .tx-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        .tx-card-plan {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .tx-card-body {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        .tx-card-amount {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+        }
+        .tx-card-ref {
+            font-size: 0.78rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            color: var(--text-muted);
+            background: var(--surface-alt);
+            padding: 3px 8px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.72rem;
+            padding: 2px 6px;
+        }
+        .tx-card-footer {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
         @media (max-width: 768px) {
             .navbar {
-                padding: 0.85rem 1.25rem;
+                padding: 0.75rem 1rem;
             }
             .nav-menu {
                 display: none !important;
@@ -337,27 +407,49 @@
                 display: none;
             }
             .main-container {
-                margin: 1.5rem auto;
+                margin: 1.25rem auto;
                 padding: 0 1rem;
             }
             .header-section {
                 flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
+                align-items: stretch;
+                gap: 0.85rem;
             }
             .header-section .btn-upgrade {
                 width: 100%;
                 text-align: center;
+                margin-top: 0.25rem;
             }
             .user-greeting {
-                font-size: 1.45rem;
+                font-size: clamp(1.35rem, 5.5vw, 1.65rem);
+            }
+            .user-sub {
+                font-size: 0.86rem;
+            }
+            .dash-card {
+                padding: 1.35rem 1.15rem;
+            }
+            .plan-title {
+                font-size: 1.4rem;
+            }
+            .usage-counter {
+                font-size: 1.9rem;
+            }
+            .btn-upgrade {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .desktop-table-view {
+                display: none !important;
+            }
+            .mobile-tx-list {
+                display: block !important;
             }
             .table-card {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-            table {
-                min-width: 540px;
+                border-radius: var(--radius-lg);
             }
         }
     </style>
@@ -517,42 +609,76 @@
         </div>
     </div>
 
-    {{-- Recent Payments Table --}}
+    {{-- Recent Payments Table & Mobile Card List --}}
     <h2 class="section-title">Riwayat Transaksi Terakhir</h2>
     <div class="table-card">
         @if ($recentPayments->isEmpty())
-            <div style="padding: 2rem; text-align: center; color: var(--text-dim);">
-                Belum ada transaksi pembayaran.
+            <div style="padding: 2.5rem 1.5rem; text-align: center; color: var(--text-dim); font-size: 0.95rem;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 0.75rem; display: block; opacity: 0.5;">
+                    <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                    <line x1="2" y1="10" x2="22" y2="10"></line>
+                </svg>
+                Belum ada riwayat transaksi pembayaran.
             </div>
         @else
-            <table>
-                <thead>
-                    <tr>
-                        <th>Order ID / Referensi</th>
-                        <th>Paket</th>
-                        <th>Nominal</th>
-                        <th>Status</th>
-                        <th>Tanggal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($recentPayments as $payment)
+            {{-- Desktop Table View --}}
+            <div class="desktop-table-view">
+                <table>
+                    <thead>
                         <tr>
-                            <td><code>{{ $payment->provider_reference }}</code></td>
-                            <td>{{ $payment->metadata['plan_name'] ?? 'Langganan' }}</td>
-                            <td>Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
-                            <td>
-                                @if ($payment->status === 'PAID')
-                                    <span class="status-badge status-paid">Lunas</span>
-                                @else
-                                    <span class="status-badge status-pending">{{ $payment->status }}</span>
-                                @endif
-                            </td>
-                            <td>{{ $payment->created_at->translatedFormat('d M Y, H:i') }}</td>
+                            <th>Order ID / Referensi</th>
+                            <th>Paket</th>
+                            <th>Nominal</th>
+                            <th>Status</th>
+                            <th>Tanggal</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach ($recentPayments as $payment)
+                            <tr>
+                                <td><code>{{ $payment->provider_reference }}</code></td>
+                                <td>{{ $payment->metadata['plan_name'] ?? 'Langganan' }}</td>
+                                <td>Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
+                                <td>
+                                    @if ($payment->status === 'PAID')
+                                        <span class="status-badge status-paid">Lunas</span>
+                                    @else
+                                        <span class="status-badge status-pending">{{ $payment->status }}</span>
+                                    @endif
+                                </td>
+                                <td>{{ $payment->created_at->translatedFormat('d M Y, H:i') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Mobile Card List View --}}
+            <div class="mobile-tx-list">
+                @foreach ($recentPayments as $payment)
+                    <div class="mobile-tx-card">
+                        <div class="tx-card-header">
+                            <div class="tx-card-plan">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <span>{{ $payment->metadata['plan_name'] ?? 'Langganan' }}</span>
+                            </div>
+                            @if ($payment->status === 'PAID')
+                                <span class="status-badge status-paid">Lunas</span>
+                            @else
+                                <span class="status-badge status-pending">{{ $payment->status }}</span>
+                            @endif
+                        </div>
+                        <div class="tx-card-body">
+                            <div class="tx-card-amount">Rp {{ number_format($payment->amount, 0, ',', '.') }}</div>
+                            <div class="tx-card-ref" title="{{ $payment->provider_reference }}">{{ $payment->provider_reference }}</div>
+                        </div>
+                        <div class="tx-card-footer">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            <span>{{ $payment->created_at->translatedFormat('d M Y, H:i') }}</span>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
         @endif
     </div>
 </div>

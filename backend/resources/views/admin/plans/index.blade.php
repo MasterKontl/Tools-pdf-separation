@@ -9,7 +9,8 @@
         <a href="{{ route('admin.plans.create') }}" class="btn-action btn-primary" style="padding:0.6rem 1.2rem;font-size:0.85rem;">+ Tambah Paket Baru</a>
     </div>
 
-    <table>
+    <div class="responsive-table">
+        <table>
         <thead>
             <tr>
                 <th>Nama Paket</th>
@@ -54,5 +55,6 @@
             @endforeach
         </tbody>
     </table>
+    </div>
 </div>
 @endsection

@@ -391,11 +391,13 @@
         .features-list { list-style: none; margin-bottom: 1.75rem; flex: 1; }
         .feature-item { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--text-main); margin-bottom: 0.8rem; }
         .feature-item svg { color: #16A34A; flex-shrink: 0; }
-        .btn-checkout {
-            width: 100%; padding: 0.85rem; border-radius: var(--radius-md); border: none;
+.btn-checkout {
+            width: 100%; padding: 0.85rem var(--radius-md); border: none;
             background: var(--primary); color: #fff; font-family: inherit; font-size: 0.95rem;
             font-weight: 700; cursor: pointer; text-align: center; text-decoration: none;
             display: block; transition: background 0.15s;
+            min-height: var(--touch-target);
+            line-height: calc(var(--touch-target) - 2px);
         }
         .btn-checkout:hover { background: var(--secondary); }
         .btn-current-plan {
@@ -435,6 +437,40 @@
             }
             .plan-card {
                 padding: 1.5rem 1.25rem;
+            }
+            .popular-badge {
+                padding: 3px 8px; font-size: 0.65rem;
+            }
+            .card-plan-name {
+                font-size: 1.15rem;
+            }
+            .card-plan-desc {
+                font-size: 0.8rem;
+                min-height: auto;
+                margin-bottom: 1rem;
+            }
+            .card-price {
+                font-size: 1.8rem;
+            }
+            .card-period {
+                font-size: 0.75rem;
+            }
+            .features-list {
+                margin-bottom: 1.25rem;
+            }
+            .feature-item {
+                font-size: 0.82rem;
+                margin-bottom: 0.6rem;
+            }
+            .feature-item svg {
+                width: 14px;
+                height: 14px;
+            }
+            .btn-checkout {
+                padding: 0.75rem var(--radius-md);
+                font-size: 0.88rem;
+                min-height: var(--touch-target);
+                line-height: calc(var(--touch-target) - 2px);
             }
         }
     </style>

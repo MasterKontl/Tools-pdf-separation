@@ -21,6 +21,7 @@
             --text-dim: #64748B;
             --radius-md: 8px;
             --radius-lg: 12px;
+            --touch-target: 44px;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -53,19 +54,76 @@
 
         /* Main Content */
         .content-area { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-        .topbar {
+.topbar {
             height: 64px; border-bottom: 1px solid var(--bg-card-border);
             background: rgba(10, 14, 23, 0.8); backdrop-filter: blur(12px);
             display: flex; align-items: center; justify-content: space-between; padding: 0 2rem;
+            position: relative;
         }
-        .page-title { font-size: 1.25rem; font-weight: 800; color: #fff; }
-        .topbar-actions { display: flex; align-items: center; gap: 1rem; }
-        .admin-badge {
-            font-size: 0.75rem; padding: 4px 10px; border-radius: 999px;
-            background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.3);
-            color: #fde047; font-weight: 700; text-transform: uppercase;
+        .topbar-actions {
+            display: flex; align-items: center; gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
-        .page-body { padding: 2rem; flex: 1; }
+        .topbar-actions .admin-badge {
+            margin-left: 0.5rem;
+        }
+        .hamburger-menu {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: var(--touch-target);
+            height: var(--touch-target);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            padding: 4px;
+            flex-shrink: 0;
+            transition: background 0.15s;
+        }
+        .hamburger-menu:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .hamburger-menu svg {
+            width: 24px;
+            height: 24px;
+            color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .hamburger-menu {
+                display: flex;
+            }
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 100;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .sidebar-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+                z-index: 99;
+            }
+            .sidebar-overlay.open {
+                opacity: 1;
+                visibility: visible;
+            }
+            .topbar-actions .nav-user-actions .user-pill,
+            .topbar-actions .nav-user-actions .btn-nav-logout {
+                display: none;
+            }
+            .topbar-actions .btn-mobile-nav-toggle {
+                display: inline-flex;
+            }
+        }
 
         /* Card & Tables */
         .card {
@@ -131,12 +189,22 @@
         </a>
     </div>
 </aside>
+ {{-- Sidebar Overlay --}}
+<div class="sidebar-overlay" onclick="toggleSidebar()" aria-label="Tutup sidebar"></div>
+</aside>
 
 {{-- Content Area --}}
 <div class="content-area">
     <header class="topbar">
         <h2 class="page-title">@yield('title', 'Admin Dashboard')</h2>
         <div class="topbar-actions">
+            <button type="button" class="hamburger-menu" onclick="toggleSidebar()" aria-label="Buka Menu Sidebar" aria-expanded="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </span>
             <span class="admin-badge">ADMIN</span>
             <span style="font-size:0.88rem;color:var(--text-muted);">{{ auth()->user()->name }}</span>
             <form action="{{ route('logout') }}" method="POST" style="display:inline;">
@@ -153,7 +221,21 @@
 
         @yield('content')
     </main>
-</div>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            const hamburger = document.querySelector('.hamburger-menu');
+            const body = document.body;
 
+            if (!sidebar || !overlay) return;
+
+            const isOpen = sidebar.classList.toggle('open');
+            overlay.classList.toggle('open', isOpen);
+            hamburger.setAttribute('aria-expanded', isOpen);
+            body.classList.toggle('overflow-hidden', isOpen);
+        }
+    </script>
+</div>
 </body>
 </html>

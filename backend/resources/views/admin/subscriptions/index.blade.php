@@ -17,7 +17,8 @@
         </form>
     </div>
 
-    <table>
+    <div class="responsive-table">
+        <table>
         <thead>
             <tr>
                 <th>Pengguna</th>
@@ -60,6 +61,7 @@
             @endforelse
         </tbody>
     </table>
+    </div>
 
     <div style="margin-top:1.5rem;">
         {{ $subscriptions->links() }}
