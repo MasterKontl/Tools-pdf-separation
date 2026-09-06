@@ -62,7 +62,7 @@
             <label for="activeCheck" style="color:#fff;font-weight:600;cursor:pointer;">Akun Aktif</label>
         </div>
 
-        <div style="display:flex;gap:10px;">
+        <div class="form-actions">
             <button type="submit" class="btn-action btn-primary" style="padding:0.75rem 1.5rem;font-size:0.95rem;">Simpan Perubahan</button>
             <a href="{{ route('admin.users.index') }}" class="btn-action" style="padding:0.75rem 1.5rem;background:rgba(255,255,255,0.08);color:#fff;">Batal</a>
         </div>

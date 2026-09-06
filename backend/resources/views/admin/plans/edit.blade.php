@@ -36,7 +36,7 @@
             <label for="unlimitedPlan" style="color:#fff;font-weight:600;cursor:pointer;">Paket Tanpa Batas (∞ Unlimited)</label>
         </div>
 
-        <div style="margin-bottom:1.25rem;display:grid;grid-template-columns:2fr 1fr;gap:1rem;">
+        <div class="price-currency-grid">
             <div>
                 <label style="display:block;font-size:0.85rem;font-weight:600;color:var(--text-muted);margin-bottom:0.4rem;">Harga (Nominal)</label>
                 <input type="number" name="price" value="{{ old('price', $plan->price) }}" min="0" step="1000" required style="width:100%;padding:0.75rem 1rem;background:rgba(0,0,0,0.3);border:1px solid var(--bg-card-border);border-radius:8px;color:#fff;outline:none;">
@@ -52,7 +52,7 @@
             <label for="activePlan" style="color:#fff;font-weight:600;cursor:pointer;">Paket Aktif</label>
         </div>
 
-        <div style="display:flex;gap:10px;">
+        <div class="form-actions">
             <button type="submit" class="btn-action btn-primary" style="padding:0.75rem 1.5rem;font-size:0.95rem;">Simpan Perubahan</button>
             <a href="{{ route('admin.plans.index') }}" class="btn-action" style="padding:0.75rem 1.5rem;background:rgba(255,255,255,0.08);color:#fff;">Batal</a>
         </div>
