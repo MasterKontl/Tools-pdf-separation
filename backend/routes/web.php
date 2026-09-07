@@ -14,19 +14,27 @@ use App\Http\Controllers\PricingController;
 use App\Http\Controllers\SeparationController;
 use App\Http\Controllers\UpscalerController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\RateLimiter;
 
 // ==========================================
 // V1 - PDF Converter
 // ==========================================
 Route::get('/', [PdfConverterController::class, 'index'])->name('converter.index');
-Route::post('/convert', [PdfConverterController::class, 'convert'])->name('converter.process');
-Route::post('/convert/fetch-url', [PdfConverterController::class, 'fetchUrl'])->name('converter.fetch-url');
+
+Route::middleware('throttle:convert')->group(function () {
+    Route::post('/convert', [PdfConverterController::class, 'convert'])->name('converter.process');
+    Route::post('/convert/fetch-url', [PdfConverterController::class, 'fetchUrl'])->name('converter.fetch-url');
+});
 
 // ==========================================
 // V2.1 - Color Separation
 // ==========================================
 Route::get('/separation', [SeparationController::class, 'index'])->name('separation.index');
-Route::post('/separation', [SeparationController::class, 'process'])->name('separation.process');
+
+Route::middleware('throttle:convert')->group(function () {
+    Route::post('/separation', [SeparationController::class, 'process'])->name('separation.process');
+});
+
 Route::get('/separation/preview/{token}/{channel}', [SeparationController::class, 'preview'])->name('separation.preview');
 Route::get('/separation/download/{token}/{channel?}', [SeparationController::class, 'download'])->name('separation.download');
 
@@ -34,7 +42,11 @@ Route::get('/separation/download/{token}/{channel?}', [SeparationController::cla
 // V3 - Image Upscaler
 // ==========================================
 Route::get('/upscaler', [UpscalerController::class, 'index'])->name('upscaler.index');
-Route::post('/upscaler/process', [UpscalerController::class, 'process'])->name('upscaler.process');
+
+Route::middleware('throttle:convert')->group(function () {
+    Route::post('/upscaler/process', [UpscalerController::class, 'process'])->name('upscaler.process');
+});
+
 Route::get('/upscaler/download/{tempId}/{ext}', [UpscalerController::class, 'download'])->name('upscaler.download');
 
 // ==========================================
@@ -50,8 +62,11 @@ Route::get('/payment/finish/{orderId}', [PaymentController::class, 'finish'])->n
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
-    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->name('register.attempt');
+
+    Route::middleware('throttle:register')->group(function () {
+        Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+        Route::post('/register', [AuthController::class, 'register'])->name('register.attempt');
+    });
 
     Route::get('/forgot-password', [PasswordResetController::class, 'showForgotPasswordForm'])->name('password.request');
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('password.email');
@@ -100,5 +115,22 @@ Route::get('/health', function () {
         'service' => 'Tools DKV API',
         'timestamp' => now()->toIso8601String(),
     ]);
+});
+
+// ==========================================
+// Rate Limiters
+// ==========================================
+use Illuminate\Cache\RateLimiting\Limit;
+
+RateLimiter::for('register', function () {
+    return Limit::perMinute(5);
+});
+
+RateLimiter::for('convert', function (\Illuminate\Http\Request $request) {
+    $user = $request->user();
+    if ($user) {
+        return Limit::perMinute(30)->by('convert-user-' . $user->id);
+    }
+    return Limit::perMinute(5)->by($request->ip());
 });
 

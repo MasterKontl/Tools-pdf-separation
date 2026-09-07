@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
 use App\Models\User;
+use App\Services\SecurityAuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -42,6 +43,7 @@ class AuthController extends Controller
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
+            SecurityAuditLogger::loginThrottled($request, $credentials['email']);
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     'success' => false,
@@ -62,9 +64,11 @@ class AuthController extends Controller
                 $request->session()->regenerate();
             }
             $user = Auth::user();
+            SecurityAuditLogger::loginSuccess($request, $user);
 
             if (!$user->is_active) {
                 Auth::logout();
+                SecurityAuditLogger::accountDeactivated($request, $user);
                 if ($request->hasSession()) {
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
@@ -107,6 +111,7 @@ class AuthController extends Controller
         }
 
         RateLimiter::hit($throttleKey);
+        SecurityAuditLogger::loginFailed($request, $credentials['email']);
 
         if ($request->expectsJson() || $request->is('api/*')) {
             return response()->json([
@@ -193,6 +198,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        SecurityAuditLogger::logout($request);
         Auth::logout();
 
         if ($request->hasSession()) {

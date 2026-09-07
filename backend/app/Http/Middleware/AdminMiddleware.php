@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\SecurityAuditLogger;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,8 @@ class AdminMiddleware
         $user = $request->user() ?: Auth::user();
 
         if (!$user || !$user->isAdmin()) {
+            SecurityAuditLogger::adminAccessDenied($request);
+
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     'success' => false,

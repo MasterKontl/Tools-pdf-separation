@@ -21,11 +21,12 @@ class AdminPaymentController extends Controller
         }
 
         if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('provider_reference', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($uq) use ($search) {
-                      $uq->where('name', 'like', "%{$search}%")
-                         ->orWhere('email', 'like', "%{$search}%");
+            $escaped = $this->escapeLikeWildcard($search);
+            $query->where(function ($q) use ($escaped) {
+                $q->where('provider_reference', 'like', "%{$escaped}%")
+                  ->orWhereHas('user', function ($uq) use ($escaped) {
+                      $uq->where('name', 'like', "%{$escaped}%")
+                         ->orWhere('email', 'like', "%{$escaped}%");
                   });
             });
         }
@@ -40,5 +41,13 @@ class AdminPaymentController extends Controller
         }
 
         return view('admin.payments.index', ['payments' => $payments]);
+    }
+
+    /**
+     * Escape LIKE wildcard characters in a search string.
+     */
+    private function escapeLikeWildcard(string $value): string
+    {
+        return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
     }
 }

@@ -9,6 +9,11 @@ use Tests\TestCase;
 
 class PdfUrlFetcherTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        cache()->flush();
+    }
     /**
      * Helper to generate minimal valid 1-page PDF binary string.
      */
@@ -81,6 +86,7 @@ class PdfUrlFetcherTest extends TestCase
         ];
 
         foreach ($invalidUrls as $url) {
+            cache()->flush();
             $response = $this->postJson('/convert/fetch-url', ['url' => $url]);
             $response->assertStatus(422);
             $response->assertJson(['success' => false]);
@@ -102,6 +108,7 @@ class PdfUrlFetcherTest extends TestCase
         ];
 
         foreach ($localhostUrls as $url) {
+            cache()->flush();
             $response = $this->postJson('/convert/fetch-url', ['url' => $url]);
             $response->assertStatus(422);
             $response->assertJson(['success' => false]);
@@ -124,6 +131,7 @@ class PdfUrlFetcherTest extends TestCase
         ];
 
         foreach ($privateIps as $url) {
+            cache()->flush();
             $response = $this->postJson('/convert/fetch-url', ['url' => $url]);
             $response->assertStatus(422);
             $response->assertJson(['success' => false]);

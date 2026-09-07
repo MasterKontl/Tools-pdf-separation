@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\SecurityAuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -43,6 +44,7 @@ class PasswordResetController extends Controller
         $ipKey = 'forgot-pwd-ip:' . $request->ip();
 
         if (RateLimiter::tooManyAttempts($ipKey, 5) || RateLimiter::tooManyAttempts($emailKey, 3)) {
+            SecurityAuditLogger::passwordResetThrottled($request, $email);
             return back()->with('status', $genericMessage);
         }
 
@@ -50,6 +52,7 @@ class PasswordResetController extends Controller
         RateLimiter::hit($emailKey, 600);
 
         $user = User::where('email', $email)->first();
+        SecurityAuditLogger::passwordResetRequested($request, $email, (bool) $user);
 
         if ($user) {
             $token = Str::random(64);
@@ -124,6 +127,7 @@ class PasswordResetController extends Controller
         ])->setRememberToken(Str::random(60));
 
         $user->save();
+        SecurityAuditLogger::passwordResetCompleted($request, $user);
 
         DB::table('password_reset_tokens')->where('email', $request->input('email'))->delete();
 

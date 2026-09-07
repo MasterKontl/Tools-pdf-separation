@@ -13,7 +13,7 @@ class ImageUpscaleService
      */
     public function maxFileSizeKb(): int
     {
-        return (int) env('UPSCALE_MAX_FILE_SIZE_KB', 10240); // 10 MB
+        return (int) config('upscaler.max_file_size_kb', 10240); // 10 MB
     }
 
     /**
@@ -21,7 +21,7 @@ class ImageUpscaleService
      */
     public function maxInputPixels(): int
     {
-        return (int) env('UPSCALE_MAX_PIXELS', 25_000_000); // 25 MP
+        return (int) config('upscaler.max_pixels', 25_000_000); // 25 MP
     }
 
     /**
@@ -29,7 +29,7 @@ class ImageUpscaleService
      */
     public function maxOutputPixels(): int
     {
-        return (int) env('UPSCALE_MAX_OUTPUT_PIXELS', 100_000_000); // 100 MP
+        return (int) config('upscaler.max_output_pixels', 100_000_000); // 100 MP
     }
 
     /**

@@ -41,6 +41,11 @@ class Payment extends Model
         return $this->belongsTo(Subscription::class);
     }
 
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(Plan::class);
+    }
+
     public function isPaid(): bool
     {
         return $this->status === 'PAID';

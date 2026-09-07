@@ -24,9 +24,10 @@ class AdminUserController extends Controller
         $query = User::with(['plan']);
 
         if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+            $escaped = $this->escapeLikeWildcard($search);
+            $query->where(function ($q) use ($escaped) {
+                $q->where('name', 'like', "%{$escaped}%")
+                  ->orWhere('email', 'like', "%{$escaped}%");
             });
         }
 
@@ -160,5 +161,13 @@ class AdminUserController extends Controller
         }
 
         return back()->with('success', "Status akun {$user->name} telah {$status}.");
+    }
+
+    /**
+     * Escape LIKE wildcard characters in a search string.
+     */
+    private function escapeLikeWildcard(string $value): string
+    {
+        return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
     }
 }

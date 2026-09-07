@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Payment;
 use App\Services\PakasirService;
 use App\Services\PaymentService;
+use App\Services\SecurityAuditLogger;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +25,7 @@ class PaymentController extends Controller
         $orderId = (string) $request->input('order_id');
         $amount = (float) $request->input('amount');
         $status = strtolower((string) $request->input('status', ''));
+        SecurityAuditLogger::paymentWebhookReceived($request, $orderId);
 
         if (empty($orderId)) {
             return response()->json(['success' => false, 'message' => 'Missing order_id'], 400);
@@ -56,6 +58,7 @@ class PaymentController extends Controller
 
             return response()->json(['success' => false, 'message' => 'Payment not completed yet'], 200);
         } catch (Exception $e) {
+            SecurityAuditLogger::paymentWebhookVerificationFailed($request, $orderId, $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Internal error during verification'], 500);
         }
     }
@@ -81,6 +84,7 @@ class PaymentController extends Controller
         // Security: Ensure caller owns the payment or is admin (if authenticated)
         $user = $request->user();
         if ($user && !$user->isAdmin() && (int) $payment->user_id !== (int) $user->id) {
+            SecurityAuditLogger::paymentStatusAccessDenied($request, $orderId);
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json(['success' => false, 'error' => 'Akses ditolak.'], 403);
             }
