@@ -14,7 +14,6 @@ use App\Http\Controllers\PricingController;
 use App\Http\Controllers\SeparationController;
 use App\Http\Controllers\UpscalerController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\RateLimiter;
 
 // ==========================================
 // V1 - PDF Converter
@@ -115,22 +114,5 @@ Route::get('/health', function () {
         'service' => 'Tools DKV API',
         'timestamp' => now()->toIso8601String(),
     ]);
-});
-
-// ==========================================
-// Rate Limiters
-// ==========================================
-use Illuminate\Cache\RateLimiting\Limit;
-
-RateLimiter::for('register', function () {
-    return Limit::perMinute(5);
-});
-
-RateLimiter::for('convert', function (\Illuminate\Http\Request $request) {
-    $user = $request->user();
-    if ($user) {
-        return Limit::perMinute(30)->by('convert-user-' . $user->id);
-    }
-    return Limit::perMinute(5)->by($request->ip());
 });
 
