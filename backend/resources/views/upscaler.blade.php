@@ -399,6 +399,65 @@
         </div>
     </div>
 
+    {{-- SEO Content Section --}}
+    <section style="margin-top:2.5rem;max-width:680px;margin-left:auto;margin-right:auto;padding:0 1rem;">
+        <h2 style="font-size:1.25rem;font-weight:700;color:var(--text-main);margin-bottom:0.75rem;">Tentang Image Upscaler</h2>
+        <p style="color:var(--text-muted);font-size:0.92rem;line-height:1.65;margin-bottom:1rem;">
+            Image Upscaler dari Tools DKV memungkinkan Anda memperbesar resolusi gambar JPG, PNG, atau WEBP hingga 4 kali lipat menggunakan metode bicubic interpolation berkualitas tinggi.
+            Hasilnya adalah gambar dengan dimensi lebih besar yang tetap terlihat halus dan tajam.
+        </p>
+        <p style="color:var(--text-muted);font-size:0.92rem;line-height:1.65;margin-bottom:1.5rem;">
+            Tool ini cocok untuk kebutuhan cetak, desain grafis, atau situasi di mana Anda membutuhkan gambar resolusi lebih tinggi dari file aslinya.
+            Semua proses berjalan di browser, tanpa perlu menginstal software editing gambar.
+        </p>
+
+        <h2 style="font-size:1.25rem;font-weight:700;color:var(--text-main);margin-bottom:0.75rem;">Cara Menggunakan</h2>
+        <ol style="color:var(--text-muted);font-size:0.92rem;line-height:1.8;margin-bottom:1.5rem;padding-left:1.25rem;">
+            <li>Klik <strong>Choose File</strong> atau seret gambar ke area upload.</li>
+            <li>Pilih skala: <strong>2×</strong> (dua kali lipat) atau <strong>4×</strong> (empat kali lipat).</li>
+            <li>Klik <strong>Upscale</strong> dan tunggu prosesnya.</li>
+            <li>Preview hasil akan ditampilkan di sebelah gambar asli.</li>
+            <li>Klik <strong>Download Hasil</strong> untuk mengunduh gambar beresolusi tinggi.</li>
+        </ol>
+
+        <h2 style="font-size:1.25rem;font-weight:700;color:var(--text-main);margin-bottom:0.75rem;">Format &amp; Spesifikasi</h2>
+        <ul style="color:var(--text-muted);font-size:0.92rem;line-height:1.8;margin-bottom:1.5rem;padding-left:1.25rem;">
+            <li><strong>Input:</strong> JPG, PNG, atau WEBP (maksimal 10 MB)</li>
+            <li><strong>Output:</strong> Format tetap sama dengan input (JPG → JPG, PNG → PNG)</li>
+            <li><strong>Skala:</strong> 2× atau 4×</li>
+            <li><strong>Algoritma:</strong> Bicubic interpolation (bukan AI super resolution)</li>
+            <li><strong>Transparansi:</strong> Transparansi PNG dan WEBP tetap dipertahankan</li>
+            <li><strong>Batas ukuran:</strong> Maksimal 25 megapiksel input, 100 megapiksel output</li>
+        </ul>
+
+        <h2 style="font-size:1.25rem;font-weight:700;color:var(--text-main);margin-bottom:0.75rem;">FAQ</h2>
+        <details style="margin-bottom:0.75rem;border:1px solid var(--border);border-radius:var(--radius-md);padding:0.85rem 1rem;background:var(--surface-alt);">
+            <summary style="font-weight:600;color:var(--text-main);cursor:pointer;font-size:0.92rem;">Apa perbedaan 2× dan 4×?</summary>
+            <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-top:0.5rem;">2× menggandakan dimensi gambar (misal 500×500 menjadi 1000×1000 piksel). 4× memperempat lipat dimensi (500×500 menjadi 2000×2000 piksel). Pilihan tergantung kebutuhan resolusi Anda.</p>
+        </details>
+        <details style="margin-bottom:0.75rem;border:1px solid var(--border);border-radius:var(--radius-md);padding:0.85rem 1rem;background:var(--surface-alt);">
+            <summary style="font-weight:600;color:var(--text-main);cursor:pointer;font-size:0.92rem;">Apakah ini menggunakan AI super resolution?</summary>
+            <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-top:0.5rem;">Tidak. Tool ini menggunakan bicubic interpolation, yaitu metode matematis standar untuk menghasilkan gambar yang lebih halus. Bukan AI yang menambah detail baru ke dalam gambar.</p>
+        </details>
+        <details style="margin-bottom:0.75rem;border:1px solid var(--border);border-radius:var(--radius-md);padding:0.85rem 1rem;background:var(--surface-alt);">
+            <summary style="font-weight:600;color:var(--text-main);cursor:pointer;font-size:0.92rem;">Format gambar apa yang didukung?</summary>
+            <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-top:0.5rem;">JPG, PNG, dan WEBP. Format output akan tetap sama dengan format input. Transparansi pada PNG dan WEBP tetap dipertahankan.</p>
+        </details>
+        <details style="margin-bottom:0.75rem;border:1px solid var(--border);border-radius:var(--radius-md);padding:0.85rem 1rem;background:var(--surface-alt);">
+            <summary style="font-weight:600;color:var(--text-main);cursor:pointer;font-size:0.92rem;">Apakah ada batasan ukuran gambar?</summary>
+            <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-top:0.5rem;">Ya. Ukuran file maksimal 10 MB. Dimensi input maksimal 25 megapiksel, dan dimensi output maksimal 100 megapiksel.</p>
+        </details>
+
+        <h2 style="font-size:1.25rem;font-weight:700;color:var(--text-main);margin-bottom:0.75rem;">Tool Lainnya</h2>
+        <p style="color:var(--text-muted);font-size:0.92rem;line-height:1.65;">
+            Selain Image Upscaler, Tools DKV juga menyediakan
+            <a href="{{ route('converter.index') }}" style="color:var(--accent);text-decoration:none;font-weight:600;">PDF Converter untuk mengonversi PDF ke PNG atau JPG</a>
+            serta
+            <a href="{{ route('separation.index') }}" style="color:var(--accent);text-decoration:none;font-weight:600;">Color Separation untuk kebutuhan sablon dan printing</a>.
+            Lihat <a href="{{ route('pricing.index') }}" style="color:var(--accent);text-decoration:none;font-weight:600;">paket dan harga</a> untuk upgrade kuota.
+        </p>
+    </section>
+
     <div class="footer">Image Upscaler &bull; Tools DKV V3 &bull; High-Quality Bicubic Interpolation</div>
 </div>
 

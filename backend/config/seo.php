@@ -14,26 +14,26 @@ return [
 
         '/' => [
             'title' => 'PDF Converter Online — Convert PDF to PNG & JPG | Tools DKV',
-            'description' => 'Convert PDF ke PNG atau JPG secara online dengan Tools DKV. Praktis untuk kebutuhan desain, percetakan, dan workflow DKV.',
-            'h1' => 'Online PDF Converter',
+            'description' => 'Konversi PDF ke PNG atau JPG secara online gratis. Pilih resolusi 150, 300, atau 600 DPI. Tanpa software tambahan, langsung dari browser.',
+            'h1' => 'PDF Converter Online',
         ],
 
         '/separation' => [
-            'title' => 'PDF Color Separation — Separasi Warna untuk Printing | Tools DKV',
-            'description' => 'Pisahkan warna PDF untuk kebutuhan desain dan printing dengan Color Separation Tools DKV.',
-            'h1' => 'PDF Color Separation',
+            'title' => 'Color Separation PDF — Separasi Warna untuk Sablon & Printing | Tools DKV',
+            'description' => 'Pisahkan warna PDF untuk kebutuhan sablon, screen printing, dan CMYK separation. Download per channel dalam format PNG.',
+            'h1' => 'Color Separation untuk Sablon & Printing',
         ],
 
         '/upscaler' => [
-            'title' => 'Image Upscaler — Upscale & Enlarge Images Online | Tools DKV',
-            'description' => 'Upscale dan perbesar gambar hingga 4× menggunakan high-quality image resizing tanpa instalasi software.',
-            'h1' => 'Image Upscaler',
+            'title' => 'Image Upscaler Online — Perbesar Gambar 2x & 4x Tanpa Software | Tools DKV',
+            'description' => 'Perbesar resolusi gambar JPG, PNG, atau WEBP hingga 4 kali lipat. Menggunakan bicubic interpolation berkualitas tinggi.',
+            'h1' => 'Image Upscaler Online',
         ],
 
         '/pricing' => [
-            'title' => 'Pricing — Tools DKV',
-            'description' => 'Lihat paket dan harga Tools DKV untuk kebutuhan PDF conversion dan image processing.',
-            'h1' => 'Pricing',
+            'title' => 'Harga & Paket Tools DKV — PDF Converter, Separation, Upscaler | Tools DKV',
+            'description' => 'Lihat paket dan harga Tools DKV. Nikmati kuota konversi harian atau upgrade ke paket Pro untuk fitur unlimited dan resolusi 600 DPI.',
+            'h1' => 'Harga & Paket Tools DKV',
         ],
 
     ],

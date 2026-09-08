@@ -676,6 +676,40 @@
         @endforeach
 </div>
 
+{{-- SEO Content Section --}}
+<section style="max-width:680px;margin:2.5rem auto 0;padding:0 1rem;">
+    <h2 style="font-size:1.25rem;font-weight:700;color:var(--text-main);margin-bottom:0.75rem;">Tentang Tools DKV</h2>
+    <p style="color:var(--text-muted);font-size:0.92rem;line-height:1.65;margin-bottom:1rem;">
+        Tools DKV adalah platform online yang menyediakan tiga tools utama untuk kebutuhan desain dan printing:
+        PDF Converter untuk mengonversi PDF ke PNG atau JPG, Color Separation untuk memisahkan warna PDF ke dalam channel individual,
+        dan Image Upscaler untuk memperbesar resolusi gambar hingga 4 kali lipat.
+    </p>
+
+    <h2 style="font-size:1.25rem;font-weight:700;color:var(--text-main);margin-bottom:0.75rem;">Paket Gratis vs Pro</h2>
+    <ul style="color:var(--text-muted);font-size:0.92rem;line-height:1.8;margin-bottom:1.5rem;padding-left:1.25rem;">
+        <li><strong>Paket Gratis:</strong> 3 konversi per hari untuk pengguna terdaftar. Tamu mendapat 1 konversi per hari.</li>
+        <li><strong>Paket Pro:</strong> Kuota harian lebih besar atau unlimited, akses resolusi 600 DPI, dan fitur premium lainnya.</li>
+    </ul>
+
+    <h2 style="font-size:1.25rem;font-weight:700;color:var(--text-main);margin-bottom:0.75rem;">FAQ</h2>
+    <details style="margin-bottom:0.75rem;border:1px solid var(--border);border-radius:var(--radius-md);padding:0.85rem 1rem;background:var(--surface-alt);">
+        <summary style="font-weight:600;color:var(--text-main);cursor:pointer;font-size:0.92rem;">Apakah saya bisa menggunakan Tools DKV secara gratis?</summary>
+        <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-top:0.5rem;">Ya. Anda bisa mendaftar akun gratis dan mendapatkan kuota 3 konversi per hari tanpa biaya. Tamu yang belum login mendapat 1 konversi per hari.</p>
+    </details>
+    <details style="margin-bottom:0.75rem;border:1px solid var(--border);border-radius:var(--radius-md);padding:0.85rem 1rem;background:var(--surface-alt);">
+        <summary style="font-weight:600;color:var(--text-main);cursor:pointer;font-size:0.92rem;">Bagaimana cara upgrade ke paket Pro?</summary>
+        <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-top:0.5rem;">Pilih paket Pro di halaman ini, lalu ikuti proses pembayaran melalui Pakasir. Setelah pembayaran berhasil, paket akan otomatis aktif di akun Anda.</p>
+    </details>
+    <details style="margin-bottom:0.75rem;border:1px solid var(--border);border-radius:var(--radius-md);padding:0.85rem 1rem;background:var(--surface-alt);">
+        <summary style="font-weight:600;color:var(--text-main);cursor:pointer;font-size:0.92rem;">Fitur apa saja yang didapat di paket Pro?</summary>
+        <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-top:0.5rem;">Paket Pro memberikan kuota konversi harian yang lebih besar atau unlimited, akses resolusi 600 DPI untuk PDF Converter, dan fitur premium lainnya yang tersedia di masa depan.</p>
+    </details>
+    <details style="margin-bottom:0.75rem;border:1px solid var(--border);border-radius:var(--radius-md);padding:0.85rem 1rem;background:var(--surface-alt);">
+        <summary style="font-weight:600;color:var(--text-main);cursor:pointer;font-size:0.92rem;">Apakah saya bisa menggunakan semua tools dengan satu paket?</summary>
+        <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-top:0.5rem;">Ya. Satu paket berlaku untuk semua tools di platform: PDF Converter, Color Separation, dan Image Upscaler.</p>
+    </details>
+</section>
+
 <script>
     function toggleDarkMode() {
         const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';

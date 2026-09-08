@@ -1104,6 +1104,68 @@
         </div>
     </div>
 
+    {{-- SEO Content Section --}}
+    <section style="margin-top:2.5rem;">
+        <h2 style="font-size:1.25rem;font-weight:700;color:var(--text-main);margin-bottom:0.75rem;">Tentang PDF Converter</h2>
+        <p style="color:var(--text-muted);font-size:0.92rem;line-height:1.65;margin-bottom:1rem;">
+            PDF Converter dari Tools DKV memungkinkan Anda mengonversi dokumen PDF menjadi gambar PNG atau JPG secara online.
+            Cukup unggah file PDF, pilih format output dan resolusi yang diinginkan, lalu unduh hasil konversi langsung dari browser tanpa perlu menginstal software apapun.
+        </p>
+        <p style="color:var(--text-muted);font-size:0.92rem;line-height:1.65;margin-bottom:1.5rem;">
+            Tool ini cocok untuk desainer, pencetak, mahasiswa DKV, dan siapapun yang membutuhkan ekstrak halaman PDF ke dalam format gambar
+            untuk keperluan presentasi, portofolio, atau persiapan cetak.
+        </p>
+
+        <h2 style="font-size:1.25rem;font-weight:700;color:var(--text-main);margin-bottom:0.75rem;">Cara Menggunakan</h2>
+        <ol style="color:var(--text-muted);font-size:0.92rem;line-height:1.8;margin-bottom:1.5rem;padding-left:1.25rem;">
+            <li>Klik <strong>Choose Files</strong> atau seret PDF ke area upload.</li>
+            <li>Pilih format output: <strong>PNG</strong> (lossless, tajam) atau <strong>JPG</strong> (ukuran lebih ringan).</li>
+            <li>Pilih resolusi DPI: 150 (web), 300 (standar cetak), atau 600 (Pro).</li>
+            <li>Klik <strong>Mulai Konversi &amp; Download</strong> dan tunggu prosesnya.</li>
+            <li>Hasil akan otomatis terunduh. Untuk dokumen multi-halaman, file dikemas dalam ZIP.</li>
+        </ol>
+
+        <h2 style="font-size:1.25rem;font-weight:700;color:var(--text-main);margin-bottom:0.75rem;">Format &amp; Spesifikasi</h2>
+        <ul style="color:var(--text-muted);font-size:0.92rem;line-height:1.8;margin-bottom:1.5rem;padding-left:1.25rem;">
+            <li><strong>Input:</strong> File PDF (maksimal 100 MB)</li>
+            <li><strong>Output:</strong> PNG atau JPG</li>
+            <li><strong>Resolusi:</strong> 150 DPI (web), 300 DPI (cetak), 600 DPI (Pro)</li>
+            <li><strong>Engine:</strong> Poppler pdftoppm (high-fidelity rendering)</li>
+            <li><strong>Multi-page:</strong> Otomatis dibundel dalam file ZIP</li>
+        </ul>
+
+        <h2 style="font-size:1.25rem;font-weight:700;color:var(--text-main);margin-bottom:0.75rem;">FAQ</h2>
+        <details style="margin-bottom:0.75rem;border:1px solid var(--border);border-radius:var(--radius-md);padding:0.85rem 1rem;background:var(--surface-alt);">
+            <summary style="font-weight:600;color:var(--text-main);cursor:pointer;font-size:0.92rem;">Apakah saya perlu menginstal software untuk mengonversi PDF?</summary>
+            <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-top:0.5rem;">Tidak. Seluruh proses konversi berjalan di server dan dapat diakses langsung dari browser. Tidak ada software yang perlu diinstal di komputer Anda.</p>
+        </details>
+        <details style="margin-bottom:0.75rem;border:1px solid var(--border);border-radius:var(--radius-md);padding:0.85rem 1rem;background:var(--surface-alt);">
+            <summary style="font-weight:600;color:var(--text-main);cursor:pointer;font-size:0.92rem;">Format output mana yang sebaiknya dipilih, PNG atau JPG?</summary>
+            <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-top:0.5rem;">PNG menghasilkan gambar lossless tanpa kompresi, cocok untuk desain grafis dan pencetakan. JPG lebih ringan dan cocok untuk keperluan web atau presentasi.</p>
+        </details>
+        <details style="margin-bottom:0.75rem;border:1px solid var(--border);border-radius:var(--radius-md);padding:0.85rem 1rem;background:var(--surface-alt);">
+            <summary style="font-weight:600;color:var(--text-main);cursor:pointer;font-size:0.92rem;">Berapa DPI yang cocok untuk kebutuhan saya?</summary>
+            <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-top:0.5rem;">150 DPI cocok untuk keperluan web dan preview. 300 DPI adalah standar untuk pencetakan. 600 DPI tersedia untuk pengguna Pro dan menghasilkan resolusi tertinggi.</p>
+        </details>
+        <details style="margin-bottom:0.75rem;border:1px solid var(--border);border-radius:var(--radius-md);padding:0.85rem 1rem;background:var(--surface-alt);">
+            <summary style="font-weight:600;color:var(--text-main);cursor:pointer;font-size:0.92rem;">Apakah PDF multi-halaman bisa diproses sekaligus?</summary>
+            <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-top:0.5rem;">Ya. Dokumen PDF dengan banyak halaman akan otomatis dikonversi satu per satu dan dikemas dalam file ZIP berurutan.</p>
+        </details>
+        <details style="margin-bottom:0.75rem;border:1px solid var(--border);border-radius:var(--radius-md);padding:0.85rem 1rem;background:var(--surface-alt);">
+            <summary style="font-weight:600;color:var(--text-main);cursor:pointer;font-size:0.92rem;">Apakah file saya aman selama proses konversi?</summary>
+            <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-top:0.5rem;">Ya. File yang diunggah hanya diproses sementara di server dan dihapus otomatis setelah konversi selesai. Tidak ada file yang disimpan permanen.</p>
+        </details>
+
+        <h2 style="font-size:1.25rem;font-weight:700;color:var(--text-main);margin-bottom:0.75rem;">Tool Lainnya</h2>
+        <p style="color:var(--text-muted);font-size:0.92rem;line-height:1.65;">
+            Selain PDF Converter, Tools DKV juga menyediakan
+            <a href="{{ route('separation.index') }}" style="color:var(--accent);text-decoration:none;font-weight:600;">Color Separation untuk sablon dan printing</a>
+            serta
+            <a href="{{ route('upscaler.index') }}" style="color:var(--accent);text-decoration:none;font-weight:600;">Image Upscaler untuk memperbesar resolusi gambar</a>.
+            Lihat <a href="{{ route('pricing.index') }}" style="color:var(--accent);text-decoration:none;font-weight:600;">paket dan harga</a> untuk upgrade kuota konversi.
+        </p>
+    </section>
+
     <div class="footer">
         Engine: Poppler pdftoppm &bull; Tools DKV Platform V3
     </div>

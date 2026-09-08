@@ -75,6 +75,9 @@ HTML;
         $ldJson = '<script type="application/ld+json">' . json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>';
         $newContent = str_replace('</head>', "{$ldJson}\n</head>", $newContent);
 
+        $seoContentHtml = view('partials.separation-seo-content')->render();
+        $newContent = str_replace('</body>', "{$seoContentHtml}\n</body>", $newContent);
+
         $response->setContent($newContent);
 
         return $response;

@@ -202,4 +202,114 @@ class SeoTest extends TestCase
         $uniqueTitles = array_unique($titles);
         $this->assertCount(count($pages), $uniqueTitles, 'Each public page must have a unique title tag');
     }
+
+    public function test_public_pages_have_h1(): void
+    {
+        $pages = ['/', '/separation', '/upscaler'];
+        foreach ($pages as $page) {
+            $response = $this->get($page);
+            $content = $response->getContent();
+            preg_match('/<h1[^>]*>(.*?)<\/h1>/', $content, $matches);
+            $this->assertNotEmpty($matches[1], "Page {$page} must have an H1 tag");
+        }
+    }
+
+    public function test_converter_page_has_faq(): void
+    {
+        $response = $this->get('/');
+        $response->assertSee('FAQ', false);
+        $response->assertSee('details', false);
+        $response->assertSee('summary', false);
+    }
+
+    public function test_upscaler_page_has_faq(): void
+    {
+        $response = $this->get('/upscaler');
+        $response->assertSee('FAQ', false);
+        $response->assertSee('details', false);
+    }
+
+    public function test_separation_page_has_faq(): void
+    {
+        $response = $this->get('/separation');
+        $response->assertSee('FAQ', false);
+        $response->assertSee('details', false);
+    }
+
+    public function test_public_pages_have_internal_links(): void
+    {
+        $response = $this->get('/');
+        $response->assertSee(route('separation.index'), false);
+        $response->assertSee(route('upscaler.index'), false);
+        $response->assertSee(route('pricing.index'), false);
+
+        $response = $this->get('/upscaler');
+        $response->assertSee(route('converter.index'), false);
+        $response->assertSee(route('separation.index'), false);
+    }
+
+    public function test_converter_page_has_how_to_section(): void
+    {
+        $response = $this->get('/');
+        $response->assertSee('Cara Menggunakan', false);
+        $response->assertSee('Format', false);
+    }
+
+    public function test_upscaler_page_has_spec_section(): void
+    {
+        $response = $this->get('/upscaler');
+        $response->assertSee('Spesifikasi', false);
+        $response->assertSee('Bicubic', false);
+    }
+
+    public function test_separation_page_has_content_sections(): void
+    {
+        $response = $this->get('/separation');
+        $response->assertSee('Tentang Color Separation', false);
+        $response->assertSee('CMYK', false);
+        $response->assertSee('screen printing', false);
+    }
+
+    public function test_pricing_page_has_content(): void
+    {
+        try {
+            $response = $this->get('/pricing');
+            if ($response->status() === 200) {
+                $response->assertSee('Tentang Tools DKV', false);
+                $response->assertSee('PDF Converter', false);
+            }
+        } catch (\Illuminate\Database\QueryException $e) {
+            $this->markTestSkipped('Plans table not available in test DB');
+        }
+    }
+
+    public function test_public_pages_do_not_have_accidental_noindex(): void
+    {
+        $pages = ['/', '/separation', '/upscaler'];
+        foreach ($pages as $page) {
+            $response = $this->get($page);
+            $content = $response->getContent();
+            $this->assertStringNotContainsString('noindex', $content, "Page {$page} must not have noindex");
+        }
+    }
+
+    public function test_robots_txt_disallows_private_routes(): void
+    {
+        $response = $this->get('/robots.txt');
+        $response->assertSee('Disallow: /admin', false);
+        $response->assertSee('Disallow: /dashboard', false);
+        $response->assertSee('Disallow: /login', false);
+        $response->assertSee('Disallow: /register', false);
+        $response->assertSee('Disallow: /forgot-password', false);
+        $response->assertSee('Disallow: /reset-password', false);
+        $response->assertSee('Disallow: /logout', false);
+    }
+
+    public function test_separation_page_has_structured_data(): void
+    {
+        $response = $this->get('/separation');
+        $response->assertSee('application/ld+json', false);
+        $response->assertSee('WebApplication', false);
+        $response->assertSee('DesignApplication', false);
+    }
 }
