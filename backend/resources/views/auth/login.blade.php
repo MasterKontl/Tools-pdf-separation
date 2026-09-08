@@ -132,6 +132,7 @@
         }
         .auth-footer { text-align: center; margin-top: 1.75rem; font-size: 0.88rem; color: var(--text-muted); }
     </style>
+    @include('partials.seo-tags')
 </head>
 <body>
 

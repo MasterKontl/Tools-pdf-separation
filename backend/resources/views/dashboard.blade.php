@@ -453,6 +453,7 @@
             }
         }
     </style>
+    @include('partials.seo-tags')
 </head>
 <body>
 

@@ -63,6 +63,7 @@
             font-size: 0.85rem; margin-bottom: 1.25rem;
         }
     </style>
+    @include('partials.seo-tags')
 </head>
 <body>
 

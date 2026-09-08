@@ -116,3 +116,53 @@ Route::get('/health', function () {
     ]);
 });
 
+Route::get('/robots.txt', function () {
+    $content = <<<'TXT'
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /logout
+Disallow: /payment/finish
+Disallow: /payment/webhook
+
+Sitemap: https://pdf-converter-app-production.up.railway.app/sitemap.xml
+TXT;
+
+    return response($content, 200, ['Content-Type' => 'text/plain']);
+})->name('robots.txt');
+
+Route::get('/sitemap.xml', function () {
+    $baseUrl = config('app.url');
+    $lastModified = now()->toIso8601String();
+
+    $publicRoutes = [
+        'converter.index' => ['priority' => '1.0', 'changefreq' => 'weekly'],
+        'separation.index' => ['priority' => '0.9', 'changefreq' => 'weekly'],
+        'upscaler.index' => ['priority' => '0.9', 'changefreq' => 'weekly'],
+        'pricing.index' => ['priority' => '0.8', 'changefreq' => 'monthly'],
+    ];
+
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+
+    foreach ($publicRoutes as $routeName => $meta) {
+        $url = route($routeName, [], false);
+        $xml .= '  <url>' . "\n";
+        $xml .= '    <loc>' . e($baseUrl . $url) . '</loc>' . "\n";
+        $xml .= '    <lastmod>' . $lastModified . '</lastmod>' . "\n";
+        $xml .= '    <changefreq>' . $meta['changefreq'] . '</changefreq>' . "\n";
+        $xml .= '    <priority>' . $meta['priority'] . '</priority>' . "\n";
+        $xml .= '  </url>' . "\n";
+    }
+
+    $xml .= '</urlset>';
+
+    return response($xml, 200, ['Content-Type' => 'application/xml']);
+})->name('sitemap.xml');
+

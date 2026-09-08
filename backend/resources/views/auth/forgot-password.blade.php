@@ -79,6 +79,7 @@
         .link-text { color: var(--accent); text-decoration: none; font-weight: 600; }
         .link-text:hover { text-decoration: underline; }
     </style>
+    @include('partials.seo-tags')
 </head>
 <body>
 
