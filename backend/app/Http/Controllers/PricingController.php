@@ -7,7 +7,6 @@ use App\Services\PakasirService;
 use App\Services\PaymentService;
 use App\Services\PlanService;
 use App\Services\QuotaService;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -108,7 +107,7 @@ class PricingController extends Controller
                 'checkout_url' => $checkoutUrl,
             ]);
 
-            return redirect()->away($checkoutUrl);
+            return view('redirect-away', ['url' => $checkoutUrl]);
         } catch (\Throwable $e) {
             Log::error('Pricing checkout: redirect failed', [
                 'user_id' => $user->id,
