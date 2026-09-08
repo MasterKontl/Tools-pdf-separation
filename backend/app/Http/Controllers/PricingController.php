@@ -9,6 +9,7 @@ use App\Services\PlanService;
 use App\Services\QuotaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class PricingController extends Controller
@@ -81,24 +82,42 @@ class PricingController extends Controller
         // Create a pending payment order
         $payment = $paymentService->createPaymentOrder($user, $plan);
 
-        // Build official Pakasir checkout URL
-        $returnUrl = route('payment.finish', ['orderId' => $payment->provider_reference]);
-        $checkoutUrl = $pakasirService->buildCheckoutUrl(
-            orderId: $payment->provider_reference,
-            amount: (float) $payment->amount,
-            redirectUrl: $returnUrl
-        );
+        try {
+            // Build official Pakasir checkout URL
+            $returnUrl = route('payment.finish', ['orderId' => $payment->provider_reference]);
+            $checkoutUrl = $pakasirService->buildCheckoutUrl(
+                orderId: $payment->provider_reference,
+                amount: (float) $payment->amount,
+                redirectUrl: $returnUrl
+            );
 
-        if ($request->expectsJson() || $request->is('api/*')) {
-            return response()->json([
-                'success' => true,
-                'checkout_url' => $checkoutUrl,
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'success' => true,
+                    'checkout_url' => $checkoutUrl,
+                    'order_id' => $payment->provider_reference,
+                    'amount' => (float) $payment->amount,
+                    'payment' => $payment,
+                ]);
+            }
+
+            Log::info('Pricing checkout: redirecting to Pakasir', [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
                 'order_id' => $payment->provider_reference,
-                'amount' => (float) $payment->amount,
-                'payment' => $payment,
+                'checkout_url' => $checkoutUrl,
             ]);
-        }
 
-        return redirect()->away($checkoutUrl);
+            return redirect()->away($checkoutUrl);
+        } catch (\Throwable $e) {
+            Log::error('Pricing checkout: redirect failed', [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'order_id' => $payment->provider_reference,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Gagal membuat link pembayaran. Silakan coba lagi atau hubungi admin.');
+        }
     }
 }

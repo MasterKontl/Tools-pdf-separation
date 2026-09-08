@@ -18,6 +18,12 @@ class SecurityHeadersMiddleware
 
         $response = $next($request);
 
+        // Skip security headers on redirect responses — CSP/form-action headers
+        // can cause browsers to silently block cross-origin redirects (e.g. payment gateways).
+        if ($response->isRedirect()) {
+            return $response;
+        }
+
         $response->headers->remove('X-Powered-By');
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
