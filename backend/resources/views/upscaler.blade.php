@@ -458,7 +458,7 @@
         </p>
     </section>
 
-    <div class="footer">Image Upscaler &bull; Tools DKV V3 &bull; High-Quality Bicubic Interpolation</div>
+    <div class="footer">Image Upscaler &bull; Tools DKV V3 &bull; High-Quality Bicubic Interpolation &bull; &copy; {{ date('Y') }}</div>
 </div>
 
 <script>

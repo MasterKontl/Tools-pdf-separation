@@ -1167,7 +1167,7 @@
     </section>
 
     <div class="footer">
-        Engine: Poppler pdftoppm &bull; Tools DKV Platform V3
+        Engine: Poppler pdftoppm &bull; Tools DKV Platform V3 &bull; &copy; {{ date('Y') }}
     </div>
 </div>
 
