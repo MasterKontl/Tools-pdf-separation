@@ -1,2 +1,14 @@
 User-agent: *
-Disallow:
+Allow: /
+
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /logout
+Disallow: /payment/finish
+Disallow: /payment/webhook
+
+Sitemap: https://pdf-converter-app-production.up.railway.app/sitemap.xml
