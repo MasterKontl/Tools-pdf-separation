@@ -1459,6 +1459,7 @@
             const hasFiles = count > 0;
             const allDone = count > 0 && batchQueueData.every(f => f.status === 'completed' || f.status === 'failed');
             const hasCompleted = batchQueueData.some(f => f.status === 'completed');
+            const hasWaiting = batchQueueData.some(f => f.status === 'waiting' || f.status === 'failed');
 
             if (hasFiles) {
                 filePreview.style.display = 'none';
@@ -1469,11 +1470,22 @@
                 const completedCount = batchQueueData.filter(f => f.status === 'completed').length;
                 const failedCount = batchQueueData.filter(f => f.status === 'failed').length;
                 if (allDone) {
-                    batchTitle.textContent = completedCount + ' dari ' + count + ' file selesai' + (failedCount > 0 ? ' (' + failedCount + ' gagal)' : '');
+                    if (completedCount === 0) {
+                        batchTitle.textContent = 'Semua file gagal';
+                    } else if (failedCount === 0) {
+                        batchTitle.textContent = count + ' file selesai';
+                    } else {
+                        batchTitle.textContent = completedCount + ' dari ' + count + ' file selesai (' + failedCount + ' gagal)';
+                    }
                 }
 
-                btnSubmit.removeAttribute('disabled');
-                btnSubmitText.textContent = isProcessingBatch ? 'Memproses...' : 'Mulai Konversi (' + count + ' file)';
+                if (allDone && !hasWaiting) {
+                    btnSubmit.setAttribute('disabled', 'true');
+                    btnSubmitText.textContent = completedCount > 0 ? 'Selesai' : 'Semua gagal';
+                } else {
+                    btnSubmit.removeAttribute('disabled');
+                    btnSubmitText.textContent = isProcessingBatch ? 'Memproses...' : 'Mulai Konversi (' + count + ' file)';
+                }
 
                 if (hasCompleted && allDone) {
                     btnDownloadAll.style.display = 'inline-flex';
