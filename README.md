@@ -1,71 +1,177 @@
+<div align="center">
+
 # Tools DKV
 
-Monorepo arsitektur terpisah untuk **Tools DKV** (High-Performance PDF Converter, Screen Print Separation Editor, dan Subscription System).
+**PDF Converter &bull; Color Separation &bull; Image Upscaler**
+
+Platform tool desain grafis berbasis web untuk kebutuhan DKV, sablon, dan printing.
+
+[![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.3-777BB4?logo=php&logoColor=white)](https://www.php.net)
+[![Railway](https://img.shields.io/badge/Deployed-On%20Railway-0B0D2E?logo=railway&logoColor=white)](https://railway.app)
+
+**[Live Production](https://pdf-converter-app-production.up.railway.app)**
+
+</div>
+
+---
+
+## Fitur
+
+### PDF Converter
+- Konversi PDF ke **PNG** atau **JPG**
+- Resolusi: **150 DPI** (web), **300 DPI** (cetak), **600 DPI** (pro)
+- Engine: Poppler `pdftoppm` (high-fidelity rendering)
+- Multi-page PDF otomatis dibundel dalam file **ZIP**
+- **Batch conversion** &mdash; pilih hingga 10 file sekaligus, proses independen, retry per-file
+- Import dari URL, Google Drive, Dropbox, OneDrive
+
+### Color Separation
+- Editor separasi film sablon digital interaktif
+- Mode: CMYK, Underbase, Spot Color, Grayscale, Outline, RGB
+- Choke & Trap (mm) untuk prepress trapping
+- Registration marks untuk alignment cetak
+- Input: PDF, PNG, JPG, CorelDRAW (CDR)
+
+### Image Upscaler
+- Perbesar resolusi gambar 2&times; atau 4&times;
+- Interpolasi bicubic
+- Input: JPG, PNG, WEBP
+
+### Platform
+- Dark / Light mode
+- Responsive (mobile &amp; desktop)
+- Quota system (Guest 1/day, User 3/day, Admin unlimited)
+- Payment gateway (Pakasir &mdash; QRIS, VA, E-Wallet)
+- SEO optimized (meta tags, structured data, sitemap, GSC verified)
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|:---|:---|
+| Backend | Laravel 13 (PHP 8.3+) |
+| Database | PostgreSQL (Supabase) |
+| PDF Engine | Poppler CLI (`pdftoppm`) |
+| Image Processing | PHP GD Library |
+| Hosting | Railway |
+| Payment | Pakasir |
+| Email | Resend |
 
 ---
 
 ## Struktur Repositori
 
-```text
+```
 Tools-DKV/
-├── backend/                  # Laravel 11/12 API & Processing Engine
+├── backend/                  # Laravel 13
 │   ├── app/
-│   ├── bootstrap/
+│   │   ├── Http/Controllers/ # PdfConverterController, ColorSeparationController, UpscalerController
+│   │   ├── Services/         # PdfConverterService, ColorSeparationService, UpscalerService, QuotaService
+│   │   └── Models/           # User, Plan, Subscription, Payment, ConversionUsage
 │   ├── config/
-│   ├── database/
-│   ├── public/
-│   ├── resources/            # Blade fallback & backward-compatible views
-│   ├── routes/
-│   │   ├── api.php           # REST API routes untuk Frontend Next.js
-│   │   └── web.php           # Legacy & Web views routes
-│   ├── storage/
-│   ├── tests/                # PHPUnit Test Suite (70 tests, 100% PASS)
-│   ├── artisan
-│   ├── composer.json
-│   └── .env.example
+│   │   └── converter.php     # PDF conversion settings (DPI, batch size, timeout)
+│   ├── resources/views/      # Blade templates (converter, separation, upscaler, pricing)
+│   ├── routes/web.php        # Web routes
+│   ├── tests/Feature/        # 14 test files, 153 test methods
+│   └── composer.json
 │
-├── frontend/                 # Next.js 14/15 App Router (Target Fase 2)
-│   ├── app/
-│   ├── components/
-│   ├── hooks/
-│   ├── lib/
-│   └── .env.example
+├── docs/
+│   └── ARCHITECTURE.md       # System architecture & data flow diagrams
 │
-├── docs/                     # Dokumentasi Sistem
-│   ├── ARCHITECTURE.md       # Diagram alur, data flow, dan CORS
-│   ├── PRD.md
-│   └── TODOS.md
-│
-├── .gitignore
+├── AGENTS.md                 # AI agent instructions
+├── CLAUDE.md                 # Claude agent config
 └── README.md
 ```
 
 ---
 
-## Local Development Workflow
+## Local Development
 
-### 1. Menjalankan Backend (Laravel API)
+### Prerequisites
+- PHP 8.3+
+- Composer
+- Node.js (optional, for frontend)
+
+### Backend
+
 ```bash
 cd backend
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
 php artisan serve --port=8000
 ```
-Backend API berjalan di `http://localhost:8000/api`
 
-### 2. Menjalankan Frontend (Next.js) *(Fase 2)*
-```bash
-cd frontend
-npm run dev
-```
-Frontend berjalan di `http://localhost:3000`
+Backend berjalan di `http://localhost:8000`
 
----
+### Testing
 
-## Test Suite
-Untuk menjalankan test backend:
 ```bash
 cd backend
 php artisan test
-# atau
-vendor/bin/phpunit
 ```
-*Hasil status saat ini: 70 tests, 386 assertions, 100% PASS.*
+
+14 test files &bull; 153 test methods
+
+---
+
+## Deployment
+
+Production di-deploy otomatis ke **Railway** setiap push ke `master`.
+
+```text
+Production URL : https://pdf-converter-app-production.up.railway.app
+GitHub         : MasterKontl/Tools-pdf-separation
+Branch         : master
+```
+
+### Rollback
+
+Jika deployment gagal, rollback ke commit known-good terakhir:
+
+```bash
+git log --oneline -5       # Cari commit hash
+git revert <commit-hash>   # Buat rollback commit
+git push origin master     # Trigger redeploy
+```
+
+---
+
+## Konfigurasi
+
+### Batch Conversion
+
+```env
+# backend/.env
+PDF_MAX_BATCH_SIZE=10        # Maksimum file per batch
+PDF_MAX_FILE_SIZE_KB=102400  # 100 MB per file
+PDFTOPPM_TIMEOUT=300         # 5 menit timeout per konversi
+```
+
+### Quota
+
+| Role | Limit/Hari | DPI |
+|:---|:---|:---|
+| Guest | 1 | 150, 300 |
+| User | 3 | 150, 300, 600 |
+| Admin | Unlimited | 150, 300, 600 |
+
+---
+
+## Security
+
+- SSRF protection untuk URL import (DNS resolution, private IP blocking)
+- CSRF protection di semua form & AJAX request
+- Rate limiting: 30 req/min (authenticated), 5 req/min (guest)
+- File validation: type, extension, size (100MB max)
+- Quota atomic reservation dengan rollback on failure
+- Temp files auto-cleanup setelah konversi
+
+---
+
+## License
+
+MIT
