@@ -46,7 +46,7 @@ class SeoInjectionMiddleware
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{$title}">
 <meta name="twitter:description" content="{$description}">
-<meta name="google-site-verification" content="KODE_UNIK_LO">
+<meta name="google-site-verification" content="2bjv5oSI_qog0xVzn6zLSJ9Xliyd-RnNH_nPuazdTGQ">
 HTML;
 
         $newContent = str_replace('</title>', "</title>\n{$seoHtml}", $content);
