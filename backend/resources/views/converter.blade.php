@@ -692,6 +692,175 @@
                 padding: 10px 10px;
             }
         }
+
+        /* Batch Queue */
+        .batch-queue {
+            margin-top: 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--surface-alt);
+            overflow: hidden;
+        }
+        .batch-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+        .batch-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .batch-actions-top {
+            display: flex;
+            gap: 6px;
+        }
+        .btn-batch-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-batch-action:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .btn-batch-clear:hover {
+            background: var(--danger-bg, #FEE2E2);
+            color: var(--danger-text, #DC2626);
+            border-color: var(--danger-border, #FECACA);
+        }
+        .batch-list {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        .batch-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.65rem 1rem;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.1s;
+        }
+        .batch-item:last-child {
+            border-bottom: none;
+        }
+        .batch-item-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 800;
+            flex-shrink: 0;
+            background: var(--surface);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+        .batch-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .batch-item-name {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .batch-item-meta {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            margin-top: 1px;
+        }
+        .batch-item-status {
+            font-size: 0.72rem;
+            font-weight: 600;
+            flex-shrink: 0;
+            text-align: right;
+        }
+        .batch-item-status.waiting { color: var(--text-dim); }
+        .batch-item-status.processing { color: var(--primary, #3B82F6); }
+        .batch-item-status.completed { color: var(--success, #10B981); }
+        .batch-item-status.failed { color: var(--danger, #EF4444); }
+        .batch-item-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .btn-item-action {
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .btn-item-action:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .btn-item-action.btn-retry {
+            color: var(--warning, #F59E0B);
+            border-color: var(--warning-border, #FDE68A);
+        }
+        .btn-item-action.btn-retry:hover {
+            background: var(--warning, #F59E0B);
+            color: #fff;
+        }
+        .batch-item-actions .spinner-sm {
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--border);
+            border-top-color: var(--primary, #3B82F6);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* Batch Progress Bar */
+        .batch-progress {
+            margin-top: 0.75rem;
+        }
+        .batch-progress-bar {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .batch-progress-fill {
+            height: 100%;
+            background: var(--primary, #3B82F6);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        .batch-progress-text {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 4px;
+            text-align: center;
+        }
     </style>
     @include('partials.seo-tags')
 </head>
@@ -876,7 +1045,7 @@
             @csrf
 
             {{-- Hidden File Inputs --}}
-            <input type="file" name="pdf" id="pdfFileInput" accept="application/pdf,.pdf" style="display:none;" required>
+            <input type="file" name="pdf" id="pdfFileInput" accept="application/pdf,.pdf" style="display:none;" multiple required>
             <input type="hidden" name="temp_file_id" id="tempFileIdInput" value="">
 
             {{-- Drag & Drop File Zone --}}
@@ -933,7 +1102,7 @@
                 </div>
 
                 <div class="drop-text-primary">Sentuh untuk memilih file PDF<br>atau tarik & lepas (drag and drop) ke sini</div>
-                <div class="drop-text-secondary">Maksimum ukuran dokumen hingga 100 MB</div>
+                <div class="drop-text-secondary">Maksimum 100 MB per file &bull; Hingga {{ $maxBatchSize ?? 10 }} file sekaligus</div>
             </div>
 
             {{-- File Preview Box --}}
@@ -951,6 +1120,24 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
+            </div>
+
+            {{-- Batch Queue --}}
+            <div class="batch-queue" id="batchQueue" style="display:none;">
+                <div class="batch-header">
+                    <span class="batch-title" id="batchTitle">0 file dipilih</span>
+                    <div class="batch-actions-top">
+                        <button type="button" class="btn-batch-action" id="btnDownloadAll" style="display:none;" title="Download semua file yang berhasil">
+                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            Download Semua
+                        </button>
+                        <button type="button" class="btn-batch-action btn-batch-clear" id="btnClearBatch" title="Hapus semua file">
+                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            Hapus Semua
+                        </button>
+                    </div>
+                </div>
+                <div class="batch-list" id="batchList"></div>
             </div>
 
             {{-- Options Grid --}}
@@ -1017,13 +1204,20 @@
                 <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                 </svg>
-                <span>Mulai Konversi & Download</span>
+                <span id="btnSubmitText">Mulai Konversi & Download</span>
             </button>
 
             <div class="processing-indicator" id="processingIndicator">
                 <div class="spinner"></div>
                 <div class="processing-text" style="font-size:0.88rem;color:var(--text-main);font-weight:600;">Merender halaman PDF dengan pdftoppm...</div>
                 <div class="processing-sub" style="font-size:0.78rem;color:var(--text-dim);margin-top:2px;">Harap tunggu, browser akan otomatis mengunduh hasil konversi.</div>
+            </div>
+
+            <div class="batch-progress" id="batchProgress" style="display:none;">
+                <div class="batch-progress-bar">
+                    <div class="batch-progress-fill" id="batchProgressFill" style="width:0%"></div>
+                </div>
+                <div class="batch-progress-text" id="batchProgressText">0 / 0 selesai</div>
             </div>
         </form>
     </div>
@@ -1182,10 +1376,18 @@
         const fileSourceTag = document.getElementById('fileSourceTag');
         const btnRemoveFile = document.getElementById('btnRemoveFile');
         const btnSubmit = document.getElementById('btnSubmit');
+        const btnSubmitText = document.getElementById('btnSubmitText');
         const convertForm = document.getElementById('convertForm');
         const processingIndicator = document.getElementById('processingIndicator');
+        const batchQueue = document.getElementById('batchQueue');
+        const batchList = document.getElementById('batchList');
+        const batchTitle = document.getElementById('batchTitle');
+        const btnDownloadAll = document.getElementById('btnDownloadAll');
+        const btnClearBatch = document.getElementById('btnClearBatch');
+        const batchProgress = document.getElementById('batchProgress');
+        const batchProgressFill = document.getElementById('batchProgressFill');
+        const batchProgressText = document.getElementById('batchProgressText');
 
-        // Split button & dropdown elements
         const btnChooseFiles = document.getElementById('btnChooseFiles');
         const btnDropdownToggle = document.getElementById('btnDropdownToggle');
         const chooseDropdown = document.getElementById('chooseDropdown');
@@ -1195,7 +1397,6 @@
         const optFromOneDrive = document.getElementById('optFromOneDrive');
         const optFromUrl = document.getElementById('optFromUrl');
 
-        // Modal elements
         const urlModal = document.getElementById('urlModal');
         const modalIcon = document.getElementById('modalIcon');
         const modalTitle = document.getElementById('modalTitle');
@@ -1209,6 +1410,12 @@
         const btnSubmitModal = document.getElementById('btnSubmitModal');
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const convertUrl = '{{ route("converter.process") }}';
+        const MAX_BATCH = {{ $maxBatchSize ?? 10 }};
+        const MAX_SIZE = {{ config('converter.max_file_size_kb', 102400) }} * 1024;
+
+        let batchQueueData = [];
+        let isProcessingBatch = false;
 
         function formatBytes(bytes, decimals = 2) {
             if (!bytes || bytes === 0) return '0 Bytes';
@@ -1219,100 +1426,345 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
         }
 
-        function updateFileState(name, sizeFormatted, sourceText) {
-            if (name) {
-                fileNameText.textContent = name;
-                fileSizeText.textContent = sizeFormatted;
-                fileSourceTag.textContent = sourceText || '📁 Dari Perangkat';
-                filePreview.style.display = 'flex';
-                dropZone.style.display = 'none';
-                btnSubmit.removeAttribute('disabled');
-            } else {
-                filePreview.style.display = 'none';
-                dropZone.style.display = 'block';
-                btnSubmit.setAttribute('disabled', 'true');
-                fileInput.value = '';
-                tempFileIdInput.value = '';
-                fileInput.setAttribute('required', 'true');
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function getFileError(file) {
+            if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+                return 'Bukan file PDF';
             }
+            if (file.size > MAX_SIZE) {
+                return 'Ukuran melebihi limit (' + formatBytes(file.size) + ')';
+            }
+            if (file.size === 0) {
+                return 'File kosong';
+            }
+            return null;
+        }
+
+        function updateSingleFileState(name, sizeFormatted, sourceText) {
+            fileNameText.textContent = name;
+            fileSizeText.textContent = sizeFormatted;
+            fileSourceTag.textContent = sourceText || 'Dari Perangkat';
+            filePreview.style.display = 'flex';
+            dropZone.style.display = 'none';
+            btnSubmit.removeAttribute('disabled');
+        }
+
+        function updateBatchState() {
+            const count = batchQueueData.length;
+            const hasFiles = count > 0;
+            const allDone = count > 0 && batchQueueData.every(f => f.status === 'completed' || f.status === 'failed');
+            const hasCompleted = batchQueueData.some(f => f.status === 'completed');
+
+            if (hasFiles) {
+                filePreview.style.display = 'none';
+                dropZone.style.display = 'none';
+                batchQueue.style.display = 'block';
+                batchTitle.textContent = count + ' file dipilih';
+
+                const completedCount = batchQueueData.filter(f => f.status === 'completed').length;
+                const failedCount = batchQueueData.filter(f => f.status === 'failed').length;
+                if (allDone) {
+                    batchTitle.textContent = completedCount + ' dari ' + count + ' file selesai' + (failedCount > 0 ? ' (' + failedCount + ' gagal)' : '');
+                }
+
+                btnSubmit.removeAttribute('disabled');
+                btnSubmitText.textContent = isProcessingBatch ? 'Memproses...' : 'Mulai Konversi (' + count + ' file)';
+
+                if (hasCompleted && allDone) {
+                    btnDownloadAll.style.display = 'inline-flex';
+                } else {
+                    btnDownloadAll.style.display = 'none';
+                }
+
+                renderBatchList();
+            } else {
+                batchQueue.style.display = 'none';
+                btnSubmitText.textContent = 'Mulai Konversi & Download';
+                btnDownloadAll.style.display = 'none';
+            }
+        }
+
+        function renderBatchList() {
+            batchList.innerHTML = '';
+            batchQueueData.forEach((item, index) => {
+                const el = document.createElement('div');
+                el.className = 'batch-item';
+                el.id = 'batch-item-' + item.id;
+
+                let statusHtml = '';
+                let actionsHtml = '';
+
+                switch (item.status) {
+                    case 'waiting':
+                        statusHtml = '<span class="batch-item-status waiting">Menunggu</span>';
+                        actionsHtml = '<button type="button" class="btn-item-action btn-remove-item" data-id="' + item.id + '" title="Hapus">✕</button>';
+                        break;
+                    case 'processing':
+                        statusHtml = '<span class="batch-item-status processing"><span class="spinner-sm"></span> Memproses...</span>';
+                        actionsHtml = '';
+                        break;
+                    case 'completed':
+                        statusHtml = '<span class="batch-item-status completed">✓ Selesai</span>';
+                        actionsHtml = '<button type="button" class="btn-item-action btn-download-item" data-id="' + item.id + '" title="Download">↓</button>';
+                        break;
+                    case 'failed':
+                        statusHtml = '<span class="batch-item-status failed">✕ ' + escapeHtml(item.error || 'Gagal') + '</span>';
+                        actionsHtml = '<button type="button" class="btn-item-action btn-retry btn-retry-item" data-id="' + item.id + '" title="Coba lagi">↻ Retry</button>';
+                        break;
+                }
+
+                el.innerHTML = '<div class="batch-item-icon">PDF</div>' +
+                    '<div class="batch-item-info">' +
+                        '<div class="batch-item-name">' + escapeHtml(item.file.name) + '</div>' +
+                        '<div class="batch-item-meta">' + formatBytes(item.file.size) + '</div>' +
+                    '</div>' +
+                    statusHtml +
+                    '<div class="batch-item-actions">' + actionsHtml + '</div>';
+
+                batchList.appendChild(el);
+            });
+
+            document.querySelectorAll('.btn-download-item').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.getAttribute('data-id');
+                    const item = batchQueueData.find(f => f.id === id);
+                    if (item && item.downloadUrl) triggerDownload(item.downloadUrl, item.downloadName || item.file.name);
+                });
+            });
+
+            document.querySelectorAll('.btn-retry-item').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.getAttribute('data-id');
+                    retryFile(id);
+                });
+            });
+
+            document.querySelectorAll('.btn-remove-item').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.getAttribute('data-id');
+                    batchQueueData = batchQueueData.filter(f => f.id !== id);
+                    updateBatchState();
+                });
+            });
+        }
+
+        function updateProgress() {
+            const total = batchQueueData.length;
+            const done = batchQueueData.filter(f => f.status === 'completed' || f.status === 'failed').length;
+            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+            batchProgressFill.style.width = pct + '%';
+            batchProgressText.textContent = done + ' / ' + total + ' selesai';
+            batchProgress.style.display = total > 0 ? 'block' : 'none';
+        }
+
+        function triggerDownload(url, filename) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename || '';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function triggerBlobDownload(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            triggerDownload(url, filename);
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+        }
+
+        function getFilenameFromResponse(response, fallbackName) {
+            const cd = response.headers.get('Content-Disposition');
+            if (cd) {
+                const match = cd.match(/filename\*?=(?:UTF-8''|"?)([^";]+)/i);
+                if (match) return decodeURIComponent(match[1].replace(/"/g, ''));
+            }
+            return fallbackName;
+        }
+
+        function getMimeTypeFromResponse(response) {
+            return response.headers.get('Content-Type') || 'application/octet-stream';
+        }
+
+        async function processFile(item) {
+            item.status = 'processing';
+            renderBatchList();
+            updateProgress();
+
+            const fd = new FormData();
+            if (item.tempFileId) {
+                fd.append('temp_file_id', item.tempFileId);
+            } else {
+                fd.append('pdf', item.file);
+            }
+            fd.append('format', document.querySelector('input[name="format"]:checked').value);
+            fd.append('dpi', document.querySelector('input[name="dpi"]:checked').value);
+
+            try {
+                const response = await fetch(convertUrl, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/octet-stream' },
+                    body: fd
+                });
+
+                if (!response.ok) {
+                    let errMsg = 'Konversi gagal.';
+                    try {
+                        const errData = await response.json();
+                        errMsg = errData.error || errMsg;
+                    } catch (e) {}
+
+                    if (response.status === 429) errMsg = 'Batas harian konversi tercapai.';
+                    else if (response.status === 422) errMsg = errMsg.replace('Gagal memproses file PDF: ', '');
+
+                    item.status = 'failed';
+                    item.error = errMsg;
+                    renderBatchList();
+                    updateProgress();
+                    return;
+                }
+
+                const blob = await response.blob();
+                const downloadName = getFilenameFromResponse(response, item.file.name.replace(/\.pdf$/i, '') + '_converted');
+                const mimeType = getMimeTypeFromResponse(response);
+                const blobUrl = URL.createObjectURL(new Blob([blob], { type: mimeType }));
+
+                item.status = 'completed';
+                item.downloadUrl = blobUrl;
+                item.downloadName = downloadName;
+                renderBatchList();
+                updateProgress();
+                triggerBlobDownload(blob, downloadName);
+            } catch (err) {
+                item.status = 'failed';
+                item.error = err.name === 'TypeError' ? 'Koneksi terputus. Silakan coba lagi.' : (err.message || 'Terjadi kesalahan.');
+                renderBatchList();
+                updateProgress();
+            }
+        }
+
+        async function processBatch() {
+            if (isProcessingBatch) return;
+            isProcessingBatch = true;
+
+            processingIndicator.style.display = 'none';
+            btnSubmit.setAttribute('disabled', 'true');
+            batchProgress.style.display = 'block';
+
+            for (const item of batchQueueData) {
+                if (item.status === 'waiting' || item.status === 'failed') {
+                    await processFile(item);
+                }
+            }
+
+            isProcessingBatch = false;
+            updateBatchState();
+        }
+
+        async function retryFile(id) {
+            const item = batchQueueData.find(f => f.id === id);
+            if (!item || item.status !== 'failed') return;
+
+            if (item.downloadUrl) {
+                URL.revokeObjectURL(item.downloadUrl);
+                item.downloadUrl = null;
+            }
+
+            item.status = 'waiting';
+            item.error = null;
+            renderBatchList();
+            updateProgress();
+
+            isProcessingBatch = false;
+            await processFile(item);
         }
 
         function toggleDropdown() {
             const isOpen = chooseDropdown.classList.contains('show');
-            if (isOpen) {
-                closeDropdown();
-            } else {
-                chooseDropdown.classList.add('show');
-                btnDropdownToggle.classList.add('open');
-            }
+            if (isOpen) closeDropdown();
+            else { chooseDropdown.classList.add('show'); btnDropdownToggle.classList.add('open'); }
         }
-
         function closeDropdown() {
             chooseDropdown.classList.remove('show');
             btnDropdownToggle.classList.remove('open');
         }
 
-        btnDropdownToggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toggleDropdown();
-        });
-
-        btnChooseFiles.addEventListener('click', (e) => {
-            e.stopPropagation();
-            closeDropdown();
-            fileInput.click();
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('#chooseWidget')) {
-                closeDropdown();
-            }
-        });
-
-        optFromDevice.addEventListener('click', () => {
-            closeDropdown();
-            fileInput.click();
-        });
+        btnDropdownToggle.addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown(); });
+        btnChooseFiles.addEventListener('click', (e) => { e.stopPropagation(); closeDropdown(); fileInput.click(); });
+        document.addEventListener('click', (e) => { if (!e.target.closest('#chooseWidget')) closeDropdown(); });
+        optFromDevice.addEventListener('click', () => { closeDropdown(); fileInput.click(); });
 
         fileInput.addEventListener('change', (e) => {
-            if (e.target.files && e.target.files[0]) {
-                const file = e.target.files[0];
-                tempFileIdInput.value = '';
-                updateFileState(file.name, formatBytes(file.size), '📁 Dari Perangkat');
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+
+            tempFileIdInput.value = '';
+
+            if (files.length === 1) {
+                const file = files[0];
+                const err = getFileError(file);
+                if (err) { alert(err); fileInput.value = ''; return; }
+                batchQueueData = [{
+                    id: 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+                    file: file,
+                    status: 'waiting',
+                    error: null,
+                    downloadUrl: null,
+                    downloadName: null
+                }];
+                updateSingleFileState(file.name, formatBytes(file.size), 'Dari Perangkat');
+                batchQueue.style.display = 'none';
+            } else {
+                if (files.length > MAX_BATCH) {
+                    alert('Maksimum ' + MAX_BATCH + ' file per batch. Anda memilih ' + files.length + ' file.');
+                    fileInput.value = '';
+                    return;
+                }
+
+                const validFiles = [];
+                const errors = [];
+                for (let i = 0; i < files.length; i++) {
+                    const fileErr = getFileError(files[i]);
+                    if (fileErr) {
+                        errors.push(files[i].name + ': ' + fileErr);
+                    } else {
+                        validFiles.push(files[i]);
+                    }
+                }
+
+                if (errors.length > 0 && validFiles.length === 0) {
+                    alert('Semua file tidak valid:\n' + errors.join('\n'));
+                    fileInput.value = '';
+                    return;
+                }
+
+                if (errors.length > 0) {
+                    alert('Beberapa file dilewati:\n' + errors.join('\n'));
+                }
+
+                batchQueueData = validFiles.map((file, idx) => ({
+                    id: 'f_' + Date.now() + '_' + idx + '_' + Math.random().toString(36).substr(2, 6),
+                    file: file,
+                    status: 'waiting',
+                    error: null,
+                    downloadUrl: null,
+                    downloadName: null
+                }));
+
+                updateBatchState();
             }
         });
 
         const providerConfig = {
-            gdrive: {
-                title: 'Import PDF dari Google Drive',
-                icon: '🎨',
-                desc: 'Masukkan link share publik file Google Drive. Pastikan opsi berbagi file diset ke "Anyone with the link".',
-                placeholder: 'https://drive.google.com/file/d/.../view?usp=sharing',
-                sourceTag: '🎨 Dari Google Drive'
-            },
-            dropbox: {
-                title: 'Import PDF dari Dropbox',
-                icon: '📦',
-                desc: 'Masukkan link tautan publik file PDF dari Dropbox Anda (share link).',
-                placeholder: 'https://www.dropbox.com/s/.../file.pdf?dl=0',
-                sourceTag: '📦 Dari Dropbox'
-            },
-            onedrive: {
-                title: 'Import PDF dari OneDrive',
-                icon: '☁️',
-                desc: 'Masukkan tautan publik file PDF dari OneDrive yang dapat diunduh langsung tanpa login.',
-                placeholder: 'https://1drv.ms/...',
-                sourceTag: '☁️ Dari OneDrive'
-            },
-            url: {
-                title: 'Import PDF dari URL',
-                icon: '🔗',
-                desc: 'Masukkan tautan langsung (direct link) file PDF publik di internet.',
-                placeholder: 'https://example.com/document.pdf',
-                sourceTag: '🔗 Dari URL Web'
-            }
+            gdrive: { title: 'Import PDF dari Google Drive', icon: '🎨', desc: 'Masukkan link share publik file Google Drive. Pastikan opsi berbagi file diset ke "Anyone with the link".', placeholder: 'https://drive.google.com/file/d/.../view?usp=sharing', sourceTag: 'Dari Google Drive' },
+            dropbox: { title: 'Import PDF dari Dropbox', icon: '📦', desc: 'Masukkan link tautan publik file PDF dari Dropbox Anda (share link).', placeholder: 'https://www.dropbox.com/s/.../file.pdf?dl=0', sourceTag: 'Dari Dropbox' },
+            onedrive: { title: 'Import PDF dari OneDrive', icon: '☁️', desc: 'Masukkan tautan publik file PDF dari OneDrive yang dapat diunduh langsung tanpa login.', placeholder: 'https://1drv.ms/...', sourceTag: 'Dari OneDrive' },
+            url: { title: 'Import PDF dari URL', icon: '🔗', desc: 'Masukkan tautan langsung (direct link) file PDF publik di internet.', placeholder: 'https://example.com/document.pdf', sourceTag: 'Dari URL Web' }
         };
-
         let currentActiveProvider = 'url';
 
         function openModal(provider) {
@@ -1329,32 +1781,18 @@
             urlModal.classList.add('active');
             setTimeout(() => modalUrlInput.focus(), 50);
         }
-
-        function closeModal() {
-            urlModal.classList.remove('active');
-        }
+        function closeModal() { urlModal.classList.remove('active'); }
 
         [optFromDropbox, optFromGoogleDrive, optFromOneDrive, optFromUrl].forEach(btn => {
-            btn.addEventListener('click', () => {
-                closeDropdown();
-                const prov = btn.getAttribute('data-provider');
-                openModal(prov);
-            });
+            btn.addEventListener('click', () => { closeDropdown(); openModal(btn.getAttribute('data-provider')); });
         });
-
         btnCloseModal.addEventListener('click', closeModal);
         btnCancelModal.addEventListener('click', closeModal);
-        urlModal.addEventListener('click', (e) => {
-            if (e.target === urlModal) closeModal();
-        });
+        urlModal.addEventListener('click', (e) => { if (e.target === urlModal) closeModal(); });
 
         btnSubmitModal.addEventListener('click', async () => {
             const rawUrl = modalUrlInput.value.trim();
-            if (!rawUrl) {
-                modalErrorText.textContent = 'Silakan masukkan tautan URL file PDF terlebih dahulu.';
-                modalErrorAlert.style.display = 'flex';
-                return;
-            }
+            if (!rawUrl) { modalErrorText.textContent = 'Silakan masukkan tautan URL file PDF terlebih dahulu.'; modalErrorAlert.style.display = 'flex'; return; }
 
             modalErrorAlert.style.display = 'none';
             modalLoadingAlert.style.display = 'flex';
@@ -1363,24 +1801,27 @@
             try {
                 const response = await fetch('{{ route("converter.fetch-url") }}', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken },
                     body: JSON.stringify({ url: rawUrl })
                 });
-
                 const data = await response.json();
-
-                if (!response.ok || !data.success) {
-                    throw new Error(data.message || 'Gagal mengambil file PDF dari URL.');
-                }
+                if (!response.ok || !data.success) throw new Error(data.message || 'Gagal mengambil file PDF dari URL.');
 
                 tempFileIdInput.value = data.tempId;
                 fileInput.removeAttribute('required');
                 const conf = providerConfig[currentActiveProvider] || providerConfig.url;
-                updateFileState(data.fileName, data.fileSizeFormatted, conf.sourceTag);
+
+                batchQueueData = [{
+                    id: 'f_' + Date.now() + '_url',
+                    file: { name: data.fileName, size: data.fileSize, type: 'application/pdf' },
+                    status: 'waiting',
+                    error: null,
+                    downloadUrl: null,
+                    downloadName: null,
+                    tempFileId: data.tempId
+                }];
+                updateSingleFileState(data.fileName, data.fileSizeFormatted, conf.sourceTag);
+                batchQueue.style.display = 'none';
                 closeModal();
             } catch (err) {
                 modalLoadingAlert.style.display = 'none';
@@ -1389,55 +1830,61 @@
                 btnSubmitModal.removeAttribute('disabled');
             }
         });
+        modalUrlInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); btnSubmitModal.click(); } });
 
-        modalUrlInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                btnSubmitModal.click();
-            }
-        });
-
-        // Drag and drop handlers
         ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                dropZone.classList.add('dragover');
-            }, false);
+            dropZone.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('dragover'); }, false);
         });
-
         ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                dropZone.classList.remove('dragover');
-            }, false);
+            dropZone.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); }, false);
         });
-
         dropZone.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            const files = dt.files;
+            const files = e.dataTransfer.files;
             if (files && files.length > 0) {
                 fileInput.files = files;
                 tempFileIdInput.value = '';
-                updateFileState(files[0].name, formatBytes(files[0].size), '📁 Dari Perangkat');
+                const event = new Event('change');
+                fileInput.dispatchEvent(event);
             }
         });
 
         btnRemoveFile.addEventListener('click', () => {
-            updateFileState(null);
+            batchQueueData = [];
+            fileInput.value = '';
+            tempFileIdInput.value = '';
+            fileInput.setAttribute('required', 'true');
+            filePreview.style.display = 'none';
+            batchQueue.style.display = 'none';
+            dropZone.style.display = 'block';
+            btnSubmit.setAttribute('disabled', 'true');
+            btnSubmitText.textContent = 'Mulai Konversi & Download';
+            btnDownloadAll.style.display = 'none';
+            batchProgress.style.display = 'none';
         });
 
-        convertForm.addEventListener('submit', () => {
+        btnClearBatch.addEventListener('click', () => {
+            batchQueueData.forEach(item => { if (item.downloadUrl) URL.revokeObjectURL(item.downloadUrl); });
+            batchQueueData = [];
+            fileInput.value = '';
+            tempFileIdInput.value = '';
+            fileInput.setAttribute('required', 'true');
+            batchQueue.style.display = 'none';
+            dropZone.style.display = 'block';
             btnSubmit.setAttribute('disabled', 'true');
-            btnSubmit.style.display = 'none';
-            processingIndicator.style.display = 'block';
+            btnSubmitText.textContent = 'Mulai Konversi & Download';
+            btnDownloadAll.style.display = 'none';
+            batchProgress.style.display = 'none';
+        });
 
-            setTimeout(() => {
-                btnSubmit.removeAttribute('disabled');
-                btnSubmit.style.display = 'flex';
-                processingIndicator.style.display = 'none';
-            }, 10000);
+        btnDownloadAll.addEventListener('click', () => {
+            const completed = batchQueueData.filter(f => f.status === 'completed' && f.downloadUrl);
+            completed.forEach(item => triggerDownload(item.downloadUrl, item.downloadName));
+        });
+
+        convertForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (batchQueueData.length === 0) return;
+            processBatch();
         });
     });
 
@@ -1448,24 +1895,16 @@
         localStorage.setItem('theme', next);
         updateThemeToggleIcons(next);
     }
-
     function updateThemeToggleIcons(theme) {
         const sunIcons = document.querySelectorAll('.theme-icon-sun');
         const moonIcons = document.querySelectorAll('.theme-icon-moon');
-        if (theme === 'dark') {
-            sunIcons.forEach(el => el.style.display = 'inline-block');
-            moonIcons.forEach(el => el.style.display = 'none');
-        } else {
-            sunIcons.forEach(el => el.style.display = 'none');
-            moonIcons.forEach(el => el.style.display = 'inline-block');
-        }
+        if (theme === 'dark') { sunIcons.forEach(el => el.style.display = 'inline-block'); moonIcons.forEach(el => el.style.display = 'none'); }
+        else { sunIcons.forEach(el => el.style.display = 'none'); moonIcons.forEach(el => el.style.display = 'inline-block'); }
     }
-
     document.addEventListener('DOMContentLoaded', () => {
         const current = document.documentElement.getAttribute('data-theme') || 'light';
         updateThemeToggleIcons(current);
     });
-
     function toggleMobileNav() {
         const panel = document.getElementById('mobileNavPanel');
         const btn = document.getElementById('mobileNavToggleBtn');
@@ -1474,27 +1913,18 @@
         btn.setAttribute('aria-expanded', isOpen);
         const hamburger = btn.querySelector('.hamburger-icon');
         const close = btn.querySelector('.close-icon');
-        if (hamburger && close) {
-            hamburger.style.display = isOpen ? 'none' : 'inline-block';
-            close.style.display = isOpen ? 'inline-block' : 'none';
-        }
+        if (hamburger && close) { hamburger.style.display = isOpen ? 'none' : 'inline-block'; close.style.display = isOpen ? 'inline-block' : 'none'; }
     }
-
     document.addEventListener('click', (e) => {
         const panel = document.getElementById('mobileNavPanel');
         const btn = document.getElementById('mobileNavToggleBtn');
         if (!panel || !btn) return;
-        if (panel.classList.contains('open') && !panel.contains(e.target) && !btn.contains(e.target)) {
-            toggleMobileNav();
-        }
+        if (panel.classList.contains('open') && !panel.contains(e.target) && !btn.contains(e.target)) toggleMobileNav();
     });
-
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             const panel = document.getElementById('mobileNavPanel');
-            if (panel && panel.classList.contains('open')) {
-                toggleMobileNav();
-            }
+            if (panel && panel.classList.contains('open')) toggleMobileNav();
         }
     });
 </script>

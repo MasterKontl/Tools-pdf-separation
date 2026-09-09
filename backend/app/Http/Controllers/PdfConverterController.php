@@ -47,6 +47,7 @@ class PdfConverterController extends Controller
             'allowedFormats' => config('converter.allowed_formats', ['png', 'jpg']),
             'usageInfo' => $usageInfo,
             'user' => $user,
+            'maxBatchSize' => config('converter.max_batch_size', 10),
         ]);
     }
 
