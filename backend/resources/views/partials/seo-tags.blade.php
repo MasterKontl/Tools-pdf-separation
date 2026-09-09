@@ -17,6 +17,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ $seoTitle }}">
 <meta name="twitter:description" content="{{ $seoDescription }}">
+<meta name="google-site-verification" content="KODE_UNIK_LO">
 @if(!empty($seoLd))
 <script type="application/ld+json">
 {!! json_encode($seoLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
