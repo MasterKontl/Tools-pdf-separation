@@ -1412,7 +1412,7 @@
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         const convertUrl = '{{ route("converter.process") }}';
         const MAX_BATCH = {{ $maxBatchSize ?? 10 }};
-        const MAX_SIZE = {{ config('converter.max_file_size_kb', 102400) }} * 1024;
+        const MAX_SIZE = {{ config('converter.max_file_size_kb', 256000) }} * 1024;
         const IS_UNLIMITED = {{ ($usageInfo['unlimited'] ?? false) ? 'true' : 'false' }};
 
         let batchQueueData = [];
@@ -1631,8 +1631,17 @@
                         errMsg = errData.error || errMsg;
                     } catch (e) {}
 
-                    if (response.status === 429) errMsg = 'Batas harian konversi tercapai.';
-                    else if (response.status === 422) errMsg = errMsg.replace('Gagal memproses file PDF: ', '');
+                    if (response.status === 413) {
+                        errMsg = 'File terlalu besar. Maksimum 250 MB.';
+                    } else if (response.status === 429) {
+                        errMsg = 'Batas harian konversi tercapai.';
+                    } else if (response.status === 502) {
+                        errMsg = 'Server sedang tidak tersedia. Silakan coba lagi dalam beberapa menit.';
+                    } else if (response.status === 504) {
+                        errMsg = 'Proses konversi timeout. File terlalu besar atau terlalu kompleks untuk diproses.';
+                    } else if (response.status >= 500) {
+                        errMsg = 'Terjadi kesalahan server. Silakan coba lagi.';
+                    }
 
                     item.status = 'failed';
                     item.error = errMsg;
@@ -1654,7 +1663,13 @@
                 triggerBlobDownload(blob, downloadName);
             } catch (err) {
                 item.status = 'failed';
-                item.error = err.name === 'TypeError' ? 'Koneksi terputus. Silakan coba lagi.' : (err.message || 'Terjadi kesalahan.');
+                if (err.name === 'TypeError') {
+                    item.error = 'Koneksi terputus. Periksa jaringan Anda dan coba lagi.';
+                } else if (err.name === 'AbortError') {
+                    item.error = 'Proses konversi melewati batas waktu. Coba kurangi DPI atau gunakan file yang lebih kecil.';
+                } else {
+                    item.error = 'Terjadi kesalahan. Silakan coba lagi.';
+                }
                 renderBatchList();
                 updateProgress();
             }

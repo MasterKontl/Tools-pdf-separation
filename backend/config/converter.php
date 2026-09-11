@@ -24,14 +24,14 @@ return [
     | Process Timeout (in seconds)
     |--------------------------------------------------------------------------
     */
-    'timeout' => (int) env('PDFTOPPM_TIMEOUT', 300),
+    'timeout' => (int) env('PDFTOPPM_TIMEOUT', 600),
 
     /*
     |--------------------------------------------------------------------------
     | Maximum Upload File Size (Kilobytes)
     |--------------------------------------------------------------------------
     */
-    'max_file_size_kb' => (int) env('PDF_MAX_FILE_SIZE_KB', 102400), // 100 MB
+    'max_file_size_kb' => (int) env('PDF_MAX_FILE_SIZE_KB', 256000), // 250 MB
 
     /*
     |--------------------------------------------------------------------------

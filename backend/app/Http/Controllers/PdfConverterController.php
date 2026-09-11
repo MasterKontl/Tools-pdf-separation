@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ConversionException;
 use App\Exceptions\QuotaExceededException;
 use App\Http\Requests\ConvertPdfRequest;
 use App\Services\PdfConverterService;
@@ -10,6 +11,7 @@ use App\Services\QuotaService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Throwable;
 
@@ -176,24 +178,54 @@ class PdfConverterController extends Controller
                     'Expires' => '0',
                 ]
             )->deleteFileAfterSend(true);
-        } catch (Throwable $e) {
-            // Rollback quota reservation if conversion failed!
+        } catch (ConversionException $e) {
             $reservation?->release();
 
             if ($tempFetchedPath && file_exists($tempFetchedPath)) {
                 @unlink($tempFetchedPath);
             }
 
+            $safeMessage = match ($e->getErrorType()) {
+                'insufficient_memory' => 'Server kehabisan memori saat memproses PDF. Coba kurangi DPI atau gunakan PDF yang lebih sederhana.',
+                'timeout' => 'Proses konversi terlalu lama. Coba kurangi DPI atau gunakan file yang lebih sederhana.',
+                'engine_unavailable' => 'Mesin konversi PDF tidak tersedia. Silakan hubungi administrator.',
+                'no_output' => 'Tidak ada gambar yang dihasilkan dari PDF ini. Pastikan file PDF tidak kosong atau terenkripsi.',
+                'invalid_dpi', 'invalid_format' => $e->getMessage(),
+                default => 'Konversi PDF gagal. Pastikan file PDF valid dan tidak rusak.',
+            };
+
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     'success' => false,
-                    'error' => 'Gagal memproses file PDF: ' . $e->getMessage(),
+                    'error' => $safeMessage,
+                    'error_type' => $e->getErrorType(),
                 ], 422);
             }
 
-            return back()
-                ->withInput()
-                ->with('error', 'Gagal memproses file PDF: ' . $e->getMessage());
+            return back()->withInput()->with('error', $safeMessage);
+        } catch (Throwable $e) {
+            $reservation?->release();
+
+            if ($tempFetchedPath && file_exists($tempFetchedPath)) {
+                @unlink($tempFetchedPath);
+            }
+
+            Log::error('PDF conversion controller error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            $safeMessage = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
+
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'error' => $safeMessage,
+                    'error_type' => 'unexpected_error',
+                ], 500);
+            }
+
+            return back()->withInput()->with('error', $safeMessage);
         }
     }
 }
