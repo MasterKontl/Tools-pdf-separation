@@ -120,4 +120,20 @@ class SecurityAuditLogger
             'limit' => $limit,
         ], $request);
     }
+
+    public static function oauthNewUser(Request $request, $user, string $provider): void
+    {
+        self::log('auth.oauth.new_user', [
+            'user_id' => $user->id,
+            'provider' => $provider,
+        ], $request);
+    }
+
+    public static function oauthAccountLinked(Request $request, $user, string $provider): void
+    {
+        self::log('auth.oauth.linked', [
+            'user_id' => $user->id,
+            'provider' => $provider,
+        ], $request);
+    }
 }

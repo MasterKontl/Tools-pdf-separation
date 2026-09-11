@@ -23,6 +23,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'google_id',
+        'avatar',
+        'provider',
     ];
 
     /**
@@ -79,6 +82,11 @@ class User extends Authenticatable
     public function isUnlimited(): bool
     {
         return (bool) $this->unlimited;
+    }
+
+    public function linkedToGoogle(): bool
+    {
+        return !empty($this->google_id);
     }
 
     /**

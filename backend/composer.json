@@ -9,6 +9,7 @@
         "php": "^8.3",
         "ext-zip": "*",
         "laravel/framework": "^13.17",
+        "laravel/socialite": "^5.31",
         "laravel/tinker": "^3.0",
         "resend/resend-laravel": "^1.4"
     },
