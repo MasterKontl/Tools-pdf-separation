@@ -11,8 +11,11 @@ use App\Services\QuotaService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\Process\Process;
 use Throwable;
 
 class PdfConverterController extends Controller
@@ -255,6 +258,244 @@ class PdfConverterController extends Controller
             }
 
             return back()->withInput()->with('error', $safeMessage);
+        }
+    }
+
+    /**
+     * Start a background conversion job.
+     * Returns a job ID that the client can poll for status.
+     */
+    public function start(
+        ConvertPdfRequest $request,
+        QuotaService $quotaService
+    ): JsonResponse {
+        $user = $request->user();
+        $reservation = null;
+
+        // Cleanup old jobs (older than 30 minutes)
+        $this->cleanupJobs();
+
+        try {
+            if ($user) {
+                $reservation = $quotaService->reserveQuotaSlot($user);
+            } else {
+                $reservation = $quotaService->reserveGuestSlot($request);
+            }
+        } catch (QuotaExceededException $qe) {
+            return response()->json([
+                'success' => false,
+                'quota_exceeded' => true,
+                'error' => $qe->getMessage(),
+            ], 429);
+        }
+
+        try {
+            $format = $request->input('format', 'png');
+            $dpi = (int) $request->input('dpi', 300);
+            $jobId = Str::random(32);
+            $jobDir = storage_path('app/jobs/' . $jobId);
+
+            if (!File::isDirectory($jobDir)) {
+                File::makeDirectory($jobDir, 0755, true, true);
+            }
+
+            // Handle temp file (URL import) vs uploaded file
+            if ($request->filled('temp_file_id')) {
+                $tempId = (string) $request->input('temp_file_id');
+                if (!preg_match('/^[a-zA-Z0-9]{10,64}$/', $tempId)) {
+                    throw new Exception('ID file sementara tidak valid.');
+                }
+                $sourcePath = storage_path('app/temp/url_import_' . $tempId . '.pdf');
+                if (!file_exists($sourcePath)) {
+                    throw new Exception('File PDF sementara tidak ditemukan atau sudah kadaluarsa.');
+                }
+                // Copy to job dir so temp file can be cleaned up
+                $jobSourcePath = $jobDir . '/input.pdf';
+                copy($sourcePath, $jobSourcePath);
+                @unlink($sourcePath);
+                $originalName = 'url_import_' . $tempId;
+            } else {
+                $uploadedFile = $request->file('pdf');
+                $originalName = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $jobSourcePath = $jobDir . '/input.pdf';
+                $uploadedFile->move($jobDir, 'input.pdf');
+            }
+
+            // Build quota info for rollback on failure
+            $quotaInfo = null;
+            if ($user) {
+                $quotaInfo = [
+                    'type' => 'user',
+                    'user_id' => $user->id,
+                    'usage_date' => now()->toDateString(),
+                    'is_unlimited' => $user->isUnlimited(),
+                ];
+            } else {
+                $sessionId = $request->hasSession() ? $request->session()->getId() : 'nosess';
+                $fingerprint = md5($request->ip() . '_' . $sessionId);
+                $date = now()->toDateString();
+                $quotaInfo = [
+                    'type' => 'guest',
+                    'cache_key' => 'guest_quota_' . $fingerprint . '_' . $date,
+                    'date' => $date,
+                ];
+            }
+
+            // Save job config
+            $config = [
+                'format' => $format,
+                'dpi' => $dpi,
+                'source_path' => $jobSourcePath,
+                'original_name' => $originalName,
+                'quota' => $quotaInfo,
+                'created_at' => now()->toIso8601String(),
+            ];
+            file_put_contents($jobDir . '/config.json', json_encode($config, JSON_PRETTY_PRINT));
+
+            // Write initial status
+            file_put_contents($jobDir . '/status.json', json_encode([
+                'status' => 'processing',
+                'started_at' => now()->toIso8601String(),
+            ], JSON_PRETTY_PRINT));
+
+            // Launch background artisan command
+            $phpBinary = PHP_BINARY;
+            $artisanPath = base_path('artisan');
+            $cmd = sprintf(
+                '%s %s convert:job %s > /dev/null 2>&1 & echo $!',
+                escapeshellarg($phpBinary),
+                escapeshellarg($artisanPath),
+                escapeshellarg($jobId)
+            );
+
+            $output = [];
+            $exitCode = 0;
+            exec($cmd, $output, $exitCode);
+
+            Log::info('Conversion job started', [
+                'job_id' => $jobId,
+                'user_id' => $user?->id ?? 'guest',
+                'format' => $format,
+                'dpi' => $dpi,
+                'file_size' => filesize($jobSourcePath),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'job_id' => $jobId,
+                'status_url' => route('converter.job-status', $jobId),
+            ]);
+        } catch (Throwable $e) {
+            $reservation?->release();
+
+            // Cleanup on failure
+            if (isset($jobDir) && File::isDirectory($jobDir)) {
+                File::deleteDirectory($jobDir);
+            }
+
+            Log::error('Failed to start conversion job', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Gagal memulai konversi. Silakan coba lagi.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Get the status of a conversion job.
+     */
+    public function jobStatus(string $jobId): JsonResponse
+    {
+        $statusPath = storage_path('app/jobs/' . $jobId . '/status.json');
+
+        if (!file_exists($statusPath)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Job tidak ditemukan.',
+            ], 404);
+        }
+
+        $status = json_decode(file_get_contents($statusPath), true);
+
+        return response()->json([
+            'success' => true,
+            'job_id' => $jobId,
+            'status' => $status['status'] ?? 'unknown',
+            'error' => $status['error'] ?? null,
+            'error_type' => $status['error_type'] ?? null,
+            'elapsed_sec' => $status['elapsed_sec'] ?? null,
+            'page_count' => $status['page_count'] ?? null,
+            'is_zip' => $status['is_zip'] ?? null,
+        ]);
+    }
+
+    /**
+     * Download the result of a completed conversion job.
+     */
+    public function jobDownload(string $jobId): BinaryFileResponse|JsonResponse
+    {
+        $statusPath = storage_path('app/jobs/' . $jobId . '/status.json');
+
+        if (!file_exists($statusPath)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Job tidak ditemukan.',
+            ], 404);
+        }
+
+        $status = json_decode(file_get_contents($statusPath), true);
+
+        if (($status['status'] ?? '') !== 'completed') {
+            return response()->json([
+                'success' => false,
+                'error' => 'Konversi belum selesai atau gagal.',
+            ], 400);
+        }
+
+        $filePath = $status['file_path'] ?? null;
+        if (!$filePath || !file_exists($filePath)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'File hasil tidak ditemukan.',
+            ], 404);
+        }
+
+        $fileName = $status['file_name'] ?? 'converted_file';
+        $mimeType = $status['mime_type'] ?? 'application/octet-stream';
+
+        return response()->download(
+            $filePath,
+            $fileName,
+            [
+                'Content-Type' => $mimeType,
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0',
+            ]
+        )->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Cleanup old conversion jobs (older than 30 minutes).
+     */
+    public function cleanupJobs(): void
+    {
+        $jobsDir = storage_path('app/jobs');
+        if (!File::isDirectory($jobsDir)) {
+            return;
+        }
+
+        $directories = File::directories($jobsDir);
+        $threshold = time() - 1800; // 30 minutes
+
+        foreach ($directories as $dir) {
+            if (filemtime($dir) < $threshold) {
+                File::deleteDirectory($dir);
+            }
         }
     }
 }

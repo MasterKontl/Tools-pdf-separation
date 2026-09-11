@@ -1431,7 +1431,7 @@
         const errorDismiss = document.getElementById('errorDismiss');
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        const convertUrl = '{{ route("converter.process") }}';
+        const startUrl = '{{ route("converter.start") }}';
         const MAX_BATCH = {{ $maxBatchSize ?? 10 }};
         const MAX_SIZE = {{ config('converter.max_file_size_kb', 256000) }} * 1024;
         const IS_UNLIMITED = {{ ($usageInfo['unlimited'] ?? false) ? 'true' : 'false' }};
@@ -1663,15 +1663,6 @@
             renderBatchList();
             updateProgress();
 
-            const fileStartTime = Date.now();
-            const fileTimer = setInterval(() => {
-                const secs = Math.floor((Date.now() - fileStartTime) / 1000);
-                const statusEl = document.querySelector('#batch-item-' + item.id + ' .batch-item-status');
-                if (statusEl) {
-                    statusEl.innerHTML = '<span class="spinner-sm"></span> Mengunggah & memproses... (' + formatElapsed(secs) + ')';
-                }
-            }, 1000);
-
             hideErrorBanner();
             processingText.textContent = 'Mengunggah: ' + item.file.name + ' (' + formatBytes(item.file.size) + ')';
             processingDetail.textContent = 'File ' + (batchQueueData.indexOf(item) + 1) + ' dari ' + batchQueueData.length + ' — Mengunggah file ke server...';
@@ -1692,15 +1683,14 @@
             const timeoutId = setTimeout(() => controller.abort(), uploadTimeout);
 
             try {
-                const response = await fetch(convertUrl, {
+                const response = await fetch(startUrl, {
                     method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/octet-stream' },
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                     body: fd,
                     signal: controller.signal
                 });
 
                 clearTimeout(timeoutId);
-                clearInterval(fileTimer);
 
                 if (!response.ok) {
                     let errMsg = 'Konversi gagal.';
@@ -1709,17 +1699,9 @@
                         errMsg = errData.error || errMsg;
                     } catch (e) {}
 
-                    if (response.status === 413) {
-                        errMsg = 'File terlalu besar. Maksimum 250 MB.';
-                    } else if (response.status === 429) {
-                        errMsg = 'Batas harian konversi tercapai.';
-                    } else if (response.status === 502) {
-                        errMsg = 'Server sedang tidak tersedia. Silakan coba lagi dalam beberapa menit.';
-                    } else if (response.status === 504) {
-                        errMsg = 'Proses konversi timeout. File terlalu besar atau terlalu kompleks untuk diproses.';
-                    } else if (response.status >= 500) {
-                        errMsg = 'Terjadi kesalahan server. Silakan coba lagi.';
-                    }
+                    if (response.status === 413) errMsg = 'File terlalu besar. Maksimum 250 MB.';
+                    else if (response.status === 429) errMsg = 'Batas harian konversi tercapai.';
+                    else if (response.status >= 500) errMsg = 'Terjadi kesalahan server. Silakan coba lagi.';
 
                     item.status = 'failed';
                     item.error = errMsg;
@@ -1731,8 +1713,96 @@
                     return;
                 }
 
-                processingText.textContent = 'Mengunduh hasil konversi...';
-                processingDetail.textContent = 'File berhasil dikonversi, sedang mengunduh hasil...';
+                const data = await response.json();
+                if (!data.success || !data.job_id) {
+                    throw new Error(data.error || 'Gagal memulai konversi.');
+                }
+
+                processingText.textContent = 'Memproses: ' + item.file.name;
+                processingDetail.textContent = 'File sedang dikonversi di server...';
+
+                // Poll for status
+                await pollJobStatus(item, data.job_id);
+
+            } catch (err) {
+                clearTimeout(timeoutId);
+                item.status = 'failed';
+                if (err.name === 'AbortError') {
+                    const sizeMB = Math.round(item.file.size / 1024 / 1024);
+                    item.error = 'Upload timeout (' + sizeMB + ' MB). Periksa koneksi internet Anda atau coba file yang lebih kecil.';
+                } else if (err.name === 'TypeError') {
+                    item.error = 'Koneksi terputus. Periksa jaringan Anda dan coba lagi.';
+                } else {
+                    item.error = err.message || 'Terjadi kesalahan. Silakan coba lagi.';
+                }
+                renderBatchList();
+                updateProgress();
+                showErrorBanner('Upload Gagal — ' + item.file.name, item.error);
+                stopElapsedTimer();
+                processingIndicator.style.display = 'none';
+            }
+        }
+
+        async function pollJobStatus(item, jobId) {
+            const pollInterval = 3000;
+            const maxPollTime = 30 * 60 * 1000; // 30 minutes max
+            const pollStart = Date.now();
+
+            while (Date.now() - pollStart < maxPollTime) {
+                await new Promise(resolve => setTimeout(resolve, pollInterval));
+
+                try {
+                    const resp = await fetch('/convert/status/' + jobId, {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    const data = await resp.json();
+
+                    if (!data.success) {
+                        throw new Error(data.error || 'Gagal mengecek status konversi.');
+                    }
+
+                    if (data.status === 'completed') {
+                        // Download the result
+                        processingText.textContent = 'Mengunduh hasil konversi...';
+                        processingDetail.textContent = 'File berhasil dikonversi, sedang mengunduh hasil...';
+                        await downloadJobResult(item, jobId);
+                        return;
+                    }
+
+                    if (data.status === 'failed') {
+                        item.status = 'failed';
+                        item.error = data.error || 'Konversi gagal di server.';
+                        renderBatchList();
+                        updateProgress();
+                        showErrorBanner('Konversi Gagal — ' + item.file.name, item.error);
+                        stopElapsedTimer();
+                        processingIndicator.style.display = 'none';
+                        return;
+                    }
+
+                    // Still processing — update status text
+                    const secs = Math.floor((Date.now() - processingStartTime) / 1000);
+                    processingDetail.textContent = 'Masih memproses... (' + formatElapsed(secs) + ')';
+                } catch (e) {
+                    // Network error during poll — retry silently
+                }
+            }
+
+            item.status = 'failed';
+            item.error = 'Proses konversi melebihi batas waktu maksimum.';
+            renderBatchList();
+            updateProgress();
+            showErrorBanner('Timeout — ' + item.file.name, item.error);
+            stopElapsedTimer();
+            processingIndicator.style.display = 'none';
+        }
+
+        async function downloadJobResult(item, jobId) {
+            try {
+                const response = await fetch('/convert/result/' + jobId);
+                if (!response.ok) {
+                    throw new Error('Gagal mengunduh hasil konversi.');
+                }
 
                 const blob = await response.blob();
                 const downloadName = getFilenameFromResponse(response, item.file.name.replace(/\.pdf$/i, '') + '_converted');
@@ -1746,23 +1816,14 @@
                 updateProgress();
                 triggerBlobDownload(blob, downloadName);
             } catch (err) {
-                clearTimeout(timeoutId);
-                clearInterval(fileTimer);
                 item.status = 'failed';
-                if (err.name === 'AbortError') {
-                    const sizeMB = Math.round(item.file.size / 1024 / 1024);
-                    item.error = 'Upload timeout (' + sizeMB + ' MB). Periksa koneksi internet Anda atau coba file yang lebih kecil.';
-                } else if (err.name === 'TypeError') {
-                    item.error = 'Koneksi terputus. Periksa jaringan Anda dan coba lagi.';
-                } else {
-                    item.error = 'Terjadi kesalahan. Silakan coba lagi.';
-                }
+                item.error = 'Berhasil dikonversi tapi gagal mengunduh. Coba lagi.';
                 renderBatchList();
                 updateProgress();
-                showErrorBanner('Upload Gagal — ' + item.file.name, item.error);
-                stopElapsedTimer();
-                processingIndicator.style.display = 'none';
+                showErrorBanner('Download Gagal — ' + item.file.name, item.error);
             }
+            stopElapsedTimer();
+            processingIndicator.style.display = 'none';
         }
 
         async function processBatch() {

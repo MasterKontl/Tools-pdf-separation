@@ -24,7 +24,11 @@ Route::get('/', [PdfConverterController::class, 'index'])->name('converter.index
 Route::middleware('throttle:convert')->group(function () {
     Route::post('/convert', [PdfConverterController::class, 'convert'])->name('converter.process');
     Route::post('/convert/fetch-url', [PdfConverterController::class, 'fetchUrl'])->name('converter.fetch-url');
+    Route::post('/convert/start', [PdfConverterController::class, 'start'])->name('converter.start');
 });
+
+Route::get('/convert/status/{jobId}', [PdfConverterController::class, 'jobStatus'])->name('converter.job-status');
+Route::get('/convert/result/{jobId}', [PdfConverterController::class, 'jobDownload'])->name('converter.job-download');
 
 // ==========================================
 // V2.1 - Color Separation
