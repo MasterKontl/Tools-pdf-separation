@@ -1668,30 +1668,38 @@
                 const secs = Math.floor((Date.now() - fileStartTime) / 1000);
                 const statusEl = document.querySelector('#batch-item-' + item.id + ' .batch-item-status');
                 if (statusEl) {
-                    statusEl.innerHTML = '<span class="spinner-sm"></span> Memproses... (' + formatElapsed(secs) + ')';
+                    statusEl.innerHTML = '<span class="spinner-sm"></span> Mengunggah & memproses... (' + formatElapsed(secs) + ')';
                 }
             }, 1000);
 
             hideErrorBanner();
-            processingText.textContent = 'Mengkonversi: ' + item.file.name;
-            processingDetail.textContent = 'File ' + (batchQueueData.indexOf(item) + 1) + ' dari ' + batchQueueData.length + ' — Harap tunggu...';
+            processingText.textContent = 'Mengunggah: ' + item.file.name + ' (' + formatBytes(item.file.size) + ')';
+            processingDetail.textContent = 'File ' + (batchQueueData.indexOf(item) + 1) + ' dari ' + batchQueueData.length + ' — Mengunggah file ke server...';
 
             const fd = new FormData();
             if (item.tempFileId) {
                 fd.append('temp_file_id', item.tempFileId);
+                processingText.textContent = 'Mengkonversi: ' + item.file.name;
+                processingDetail.textContent = 'File ' + (batchQueueData.indexOf(item) + 1) + ' dari ' + batchQueueData.length + ' — Harap tunggu...';
             } else {
                 fd.append('pdf', item.file);
             }
             fd.append('format', document.querySelector('input[name="format"]:checked').value);
             fd.append('dpi', document.querySelector('input[name="dpi"]:checked').value);
 
+            const controller = new AbortController();
+            const uploadTimeout = Math.max(120000, Math.ceil(item.file.size / 1024 / 1024) * 8000);
+            const timeoutId = setTimeout(() => controller.abort(), uploadTimeout);
+
             try {
                 const response = await fetch(convertUrl, {
                     method: 'POST',
                     headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/octet-stream' },
-                    body: fd
+                    body: fd,
+                    signal: controller.signal
                 });
 
+                clearTimeout(timeoutId);
                 clearInterval(fileTimer);
 
                 if (!response.ok) {
@@ -1718,8 +1726,13 @@
                     renderBatchList();
                     updateProgress();
                     showErrorBanner('Konversi Gagal — ' + item.file.name, errMsg);
+                    stopElapsedTimer();
+                    processingIndicator.style.display = 'none';
                     return;
                 }
+
+                processingText.textContent = 'Mengunduh hasil konversi...';
+                processingDetail.textContent = 'File berhasil dikonversi, sedang mengunduh hasil...';
 
                 const blob = await response.blob();
                 const downloadName = getFilenameFromResponse(response, item.file.name.replace(/\.pdf$/i, '') + '_converted');
@@ -1733,18 +1746,22 @@
                 updateProgress();
                 triggerBlobDownload(blob, downloadName);
             } catch (err) {
+                clearTimeout(timeoutId);
                 clearInterval(fileTimer);
                 item.status = 'failed';
-                if (err.name === 'TypeError') {
+                if (err.name === 'AbortError') {
+                    const sizeMB = Math.round(item.file.size / 1024 / 1024);
+                    item.error = 'Upload timeout (' + sizeMB + ' MB). Periksa koneksi internet Anda atau coba file yang lebih kecil.';
+                } else if (err.name === 'TypeError') {
                     item.error = 'Koneksi terputus. Periksa jaringan Anda dan coba lagi.';
-                } else if (err.name === 'AbortError') {
-                    item.error = 'Proses konversi melewati batas waktu. Coba kurangi DPI atau gunakan file yang lebih kecil.';
                 } else {
                     item.error = 'Terjadi kesalahan. Silakan coba lagi.';
                 }
                 renderBatchList();
                 updateProgress();
-                showErrorBanner('Konversi Gagal — ' + item.file.name, item.error);
+                showErrorBanner('Upload Gagal — ' + item.file.name, item.error);
+                stopElapsedTimer();
+                processingIndicator.style.display = 'none';
             }
         }
 
@@ -1754,8 +1771,8 @@
             hideErrorBanner();
 
             processingIndicator.style.display = 'block';
-            processingText.textContent = 'Merender halaman PDF dengan pdftoppm...';
-            processingDetail.textContent = 'Harap tunggu, browser akan otomatis mengunduh hasil konversi.';
+            processingText.textContent = 'Menyiapkan konversi...';
+            processingDetail.textContent = 'Mengunggah file ke server, mohon tunggu...';
             startElapsedTimer();
 
             btnSubmit.setAttribute('disabled', 'true');
