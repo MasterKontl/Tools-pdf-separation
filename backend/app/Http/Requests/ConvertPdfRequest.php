@@ -22,7 +22,7 @@ class ConvertPdfRequest extends FormRequest
      */
     public function rules(): array
     {
-        $maxKb = config('converter.max_file_size_kb', 102400);
+        $maxKb = config('converter.max_file_size_kb', 256000);
         $user = $this->user();
         $canHighDpi = $user && $user->canAccessHighDpi();
         $isUnlimited = $user && $user->isUnlimited();
