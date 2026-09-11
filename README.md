@@ -7,10 +7,10 @@
 Platform tool desain grafis berbasis web untuk kebutuhan DKV, sablon, dan printing.
 
 [![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)](https://laravel.com)
-[![PHP](https://img.shields.io/badge/PHP-8.3-777BB4?logo=php&logoColor=white)](https://www.php.net)
+[![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?logo=php&logoColor=white)](https://www.php.net)
 [![Railway](https://img.shields.io/badge/Deployed-On%20Railway-0B0D2E?logo=railway&logoColor=white)](https://railway.app)
 
-**[Live Production](https://pdf-converter-app-production.up.railway.app)**
+**[Live Production](https://kurniawansatya.xyz)**
 
 </div>
 
@@ -51,7 +51,7 @@ Platform tool desain grafis berbasis web untuk kebutuhan DKV, sablon, dan printi
 
 | Layer | Technology |
 |:---|:---|
-| Backend | Laravel 13 (PHP 8.3+) |
+| Backend | Laravel 13 (PHP 8.4+) |
 | Database | PostgreSQL (Supabase) |
 | PDF Engine | Poppler CLI (`pdftoppm`) |
 | Image Processing | PHP GD Library |
@@ -123,7 +123,7 @@ php artisan test
 Production di-deploy otomatis ke **Railway** setiap push ke `master`.
 
 ```text
-Production URL : https://pdf-converter-app-production.up.railway.app
+Production URL : https://kurniawansatya.xyz
 GitHub         : MasterKontl/Tools-pdf-separation
 Branch         : master
 ```
@@ -147,8 +147,8 @@ git push origin master     # Trigger redeploy
 ```env
 # backend/.env
 PDF_MAX_BATCH_SIZE=10        # Maksimum file per batch
-PDF_MAX_FILE_SIZE_KB=102400  # 100 MB per file
-PDFTOPPM_TIMEOUT=300         # 5 menit timeout per konversi
+PDF_MAX_FILE_SIZE_KB=256000  # 250 MB per file
+PDFTOPPM_TIMEOUT=600         # 10 menit timeout per konversi
 ```
 
 ### Quota
@@ -166,9 +166,59 @@ PDFTOPPM_TIMEOUT=300         # 5 menit timeout per konversi
 - SSRF protection untuk URL import (DNS resolution, private IP blocking)
 - CSRF protection di semua form & AJAX request
 - Rate limiting: 30 req/min (authenticated), 5 req/min (guest)
-- File validation: type, extension, size (100MB max)
+- File validation: type, extension, size (250 MB max)
 - Quota atomic reservation dengan rollback on failure
 - Temp files auto-cleanup setelah konversi
+
+---
+
+## SEO & Domain Setup
+
+### Production Canonical Domain
+
+```
+https://kurniawansatya.xyz
+```
+
+The old Railway domain (`pdf-converter-app-production.up.railway.app`) is **not** the canonical SEO domain. All public URLs must use `kurniawansatya.xyz`.
+
+### Sitemap
+
+- **URL:** `https://kurniawansatya.xyz/sitemap.xml`
+- Generated dynamically from `config('app.url')` + Laravel `route()` helper
+- Indexable public pages:
+  - `https://kurniawansatya.xyz/` (priority 1.0, weekly)
+  - `https://kurniawansatya.xyz/separation` (priority 0.9, weekly)
+  - `https://kurniawansatya.xyz/upscaler` (priority 0.9, weekly)
+  - `https://kurniawansatya.xyz/pricing` (priority 0.8, monthly)
+- Admin, auth, payment, and dashboard routes are excluded
+
+### robots.txt
+
+- **URL:** `https://kurniawansatya.xyz/robots.txt`
+- Allows all crawlers on public pages
+- Disallows: `/admin`, `/dashboard`, `/login`, `/register`, `/forgot-password`, `/reset-password`, `/logout`, `/payment/finish`, `/payment/webhook`
+- References sitemap at `https://kurniawansatya.xyz/sitemap.xml`
+
+### SEO Meta Tags
+
+- Canonical, Open Graph, and Twitter Card tags are injected via `partials/seo-tags.blade.php`
+- `$seo['url']` uses `url()->current()` which resolves to the canonical domain via `APP_URL`
+- JSON-LD structured data (WebSite + WebApplication) is generated in `AppServiceProvider::buildStructuredData()`
+- Google Search Console verified via meta tag: `2bjv5oSI_qog0xVzn6zLSJ9Xliyd-RnNH_nPuazdTGQ`
+
+### Google Search Console
+
+- Submit sitemap: `https://kurniawansatya.xyz/sitemap.xml`
+- After domain migration, allow 1-2 weeks for Googlebot to recrawl and re-index
+- Verify that the property is set to `https://kurniawansatya.xyz` (not the Railway URL)
+
+### Cloudflare / Railway
+
+- Cloudflare is used as CDN/proxy (`Server: cloudflare` in response headers)
+- Railway serves the application backend (`x-railway-edge` header visible)
+- `APP_URL` must be set to `https://kurniawansatya.xyz` in Railway environment variables
+- Cloudflare SSL mode should be "Full (Strict)" to avoid redirect loops
 
 ---
 
