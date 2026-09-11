@@ -9,9 +9,9 @@ use Illuminate\Support\Str;
 class PdfUrlFetcherService
 {
     /**
-     * Maximum allowed download size (100 MB in bytes).
+     * Maximum allowed download size (250 MB in bytes).
      */
-    public const MAX_FILE_SIZE_BYTES = 104857600; // 100 * 1024 * 1024
+    public const MAX_FILE_SIZE_BYTES = 262144000; // 250 * 1024 * 1024
 
     /**
      * Maximum number of allowed redirects.
@@ -105,7 +105,7 @@ class PdfUrlFetcherService
 
             $fileSize = filesize($tempDownloadPath);
             if ($fileSize > self::MAX_FILE_SIZE_BYTES) {
-                throw new Exception('Ukuran file melebihi batas maksimum 100 MB.');
+                throw new Exception('Ukuran file melebihi batas maksimum 250 MB.');
             }
 
             // 2. Validate PDF Magic Bytes (%PDF-)
@@ -243,7 +243,7 @@ class PdfUrlFetcherService
                     if ($headerName === 'content-length') {
                         $contentLength = (int) $headerVal;
                         if ($contentLength > self::MAX_FILE_SIZE_BYTES) {
-                            $downloadAbortedReason = 'Ukuran file melebihi batas maksimum 100 MB.';
+                            $downloadAbortedReason = 'Ukuran file melebihi batas maksimum 250 MB.';
                             return 0; // Returning 0 causes cURL to abort download
                         }
                     }
@@ -251,12 +251,12 @@ class PdfUrlFetcherService
                 return $len;
             });
 
-            // Progress callback: hard abort if bytes streamed exceed 100 MB (even without Content-Length)
+            // Progress callback: hard abort if bytes streamed exceed 250 MB (even without Content-Length)
             curl_setopt($ch, CURLOPT_NOPROGRESS, false);
             curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, function ($curlHandle, $dlTotal, $dlNow, $ulTotal, $ulNow) use (&$downloadAbortedReason, &$downloadedBytesCount) {
                 $downloadedBytesCount = (int) $dlNow;
                 if ($downloadedBytesCount > self::MAX_FILE_SIZE_BYTES) {
-                    $downloadAbortedReason = 'Ukuran file melebihi batas maksimum 100 MB.';
+                    $downloadAbortedReason = 'Ukuran file melebihi batas maksimum 250 MB.';
                     return 1; // Non-zero return value aborts cURL transfer
                 }
                 return 0;

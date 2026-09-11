@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'https://pdf-converter-app-production.up.railway.app'),
+    'url' => env('APP_URL', 'https://kurniawansatya.xyz'),
 
     /*
     |--------------------------------------------------------------------------

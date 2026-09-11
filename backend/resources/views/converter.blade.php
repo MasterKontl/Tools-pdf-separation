@@ -1102,7 +1102,7 @@
                 </div>
 
                 <div class="drop-text-primary">Sentuh untuk memilih file PDF<br>atau tarik & lepas (drag and drop) ke sini</div>
-                <div class="drop-text-secondary">Maksimum 100 MB per file &bull; Hingga {{ $maxBatchSize ?? 10 }} file sekaligus</div>
+                <div class="drop-text-secondary">Maksimum 250 MB per file &bull; Hingga {{ $maxBatchSize ?? 10 }} file sekaligus</div>
             </div>
 
             {{-- File Preview Box --}}
@@ -1321,7 +1321,7 @@
 
         <h2 style="font-size:1.25rem;font-weight:700;color:var(--text-main);margin-bottom:0.75rem;">Format &amp; Spesifikasi</h2>
         <ul style="color:var(--text-muted);font-size:0.92rem;line-height:1.8;margin-bottom:1.5rem;padding-left:1.25rem;">
-            <li><strong>Input:</strong> File PDF (maksimal 100 MB)</li>
+            <li><strong>Input:</strong> File PDF (maksimal 250 MB)</li>
             <li><strong>Output:</strong> PNG atau JPG</li>
             <li><strong>Resolusi:</strong> 150 DPI (web), 300 DPI (cetak), 600 DPI (Pro)</li>
             <li><strong>Engine:</strong> Poppler pdftoppm (high-fidelity rendering)</li>

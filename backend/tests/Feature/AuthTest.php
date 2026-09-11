@@ -157,7 +157,7 @@ class AuthTest extends TestCase
         $response = $this->withHeaders([
             'X-Forwarded-Proto' => 'https',
             'X-Forwarded-Port' => '443',
-            'X-Forwarded-Host' => 'pdf-converter-app-production.up.railway.app',
+            'X-Forwarded-Host' => 'kurniawansatya.xyz',
         ])->get('/login');
 
         $response->assertStatus(200);
@@ -287,8 +287,8 @@ class AuthTest extends TestCase
 
     public function test_password_reset_url_uses_https_in_production(): void
     {
-        config(['app.url' => 'https://pdf-converter-app-production.up.railway.app']);
-        \Illuminate\Support\Facades\URL::forceRootUrl('https://pdf-converter-app-production.up.railway.app');
+        config(['app.url' => 'https://kurniawansatya.xyz']);
+        \Illuminate\Support\Facades\URL::forceRootUrl('https://kurniawansatya.xyz');
         \Illuminate\Support\Facades\URL::forceScheme('https');
 
         $user = User::factory()->create([
@@ -298,7 +298,7 @@ class AuthTest extends TestCase
         $notification = new ResetPasswordNotification('secure-token-abc');
         $mail = $notification->toMail($user);
 
-        $this->assertStringStartsWith('https://pdf-converter-app-production.up.railway.app/reset-password/secure-token-abc', $mail->actionUrl);
+        $this->assertStringStartsWith('https://kurniawansatya.xyz/reset-password/secure-token-abc', $mail->actionUrl);
     }
 }
 

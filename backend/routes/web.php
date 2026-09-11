@@ -136,7 +136,7 @@ Disallow: /logout
 Disallow: /payment/finish
 Disallow: /payment/webhook
 
-Sitemap: https://pdf-converter-app-production.up.railway.app/sitemap.xml
+Sitemap: https://kurniawansatya.xyz/sitemap.xml
 TXT;
 
     return response($content, 200, ['Content-Type' => 'text/plain']);

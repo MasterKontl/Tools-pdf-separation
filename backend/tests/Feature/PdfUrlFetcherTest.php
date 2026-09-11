@@ -177,21 +177,21 @@ class PdfUrlFetcherTest extends TestCase
     }
 
     /**
-     * 6. Test file >100 MB is rejected.
+     * 6. Test file >250 MB is rejected.
      */
-    public function test_file_exceeding_100mb_is_rejected(): void
+    public function test_file_exceeding_250mb_is_rejected(): void
     {
         $service = new PdfUrlFetcherService();
         $service->setDnsResolver(fn ($host) => ['93.184.216.34']);
         $service->setHttpTransport(function ($url, $dest) {
-            // Simulate Content-Length > 100MB
+            // Simulate Content-Length > 250MB
             return [
                 'statusCode' => 200,
                 'headers' => [
-                    'content-length' => (string) (105 * 1024 * 1024),
+                    'content-length' => (string) (260 * 1024 * 1024),
                     'content-type' => 'application/pdf',
                 ],
-                'error' => 'Ukuran file melebihi batas maksimum 100 MB.',
+                'error' => 'Ukuran file melebihi batas maksimum 250 MB.',
             ];
         });
 
@@ -203,7 +203,7 @@ class PdfUrlFetcherTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJson(['success' => false]);
-        $this->assertStringContainsString('100 MB', $response->json('message'));
+        $this->assertStringContainsString('250 MB', $response->json('message'));
     }
 
     /**
