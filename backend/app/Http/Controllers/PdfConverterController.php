@@ -115,6 +115,15 @@ class PdfConverterController extends Controller
     ) {
         $user = $request->user();
         $reservation = null;
+        $convertStart = microtime(true);
+
+        Log::info('PDF conversion started', [
+            'user_id' => $user?->id ?? 'guest',
+            'format' => $request->input('format', 'png'),
+            'dpi' => $request->input('dpi', 300),
+            'has_temp_file' => $request->filled('temp_file_id'),
+            'file_size' => $request->file('pdf')?->getSize(),
+        ]);
 
         // 1. Quota reservation (User atomic DB reservation OR Guest session/cache reservation)
         try {
@@ -160,6 +169,15 @@ class PdfConverterController extends Controller
 
             $result = $converter->convert($source, $format, $dpi);
 
+            $elapsed = round(microtime(true) - $convertStart, 2);
+            Log::info('PDF conversion completed', [
+                'user_id' => $user?->id ?? 'guest',
+                'elapsed_sec' => $elapsed,
+                'page_count' => $result['pageCount'],
+                'is_zip' => $result['isZip'],
+                'output_file' => $result['fileName'],
+            ]);
+
             // Cleanup the fetched temporary source file after successful conversion
             if ($tempFetchedPath && file_exists($tempFetchedPath)) {
                 @unlink($tempFetchedPath);
@@ -179,6 +197,14 @@ class PdfConverterController extends Controller
                 ]
             )->deleteFileAfterSend(true);
         } catch (ConversionException $e) {
+            $elapsed = round(microtime(true) - $convertStart, 2);
+            Log::warning('PDF conversion failed', [
+                'user_id' => $user?->id ?? 'guest',
+                'error_type' => $e->getErrorType(),
+                'message' => $e->getMessage(),
+                'elapsed_sec' => $elapsed,
+            ]);
+
             $reservation?->release();
 
             if ($tempFetchedPath && file_exists($tempFetchedPath)) {
@@ -204,16 +230,19 @@ class PdfConverterController extends Controller
 
             return back()->withInput()->with('error', $safeMessage);
         } catch (Throwable $e) {
+            $elapsed = round(microtime(true) - $convertStart, 2);
+            Log::error('PDF conversion controller error', [
+                'user_id' => $user?->id ?? 'guest',
+                'error' => $e->getMessage(),
+                'elapsed_sec' => $elapsed,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             $reservation?->release();
 
             if ($tempFetchedPath && file_exists($tempFetchedPath)) {
                 @unlink($tempFetchedPath);
             }
-
-            Log::error('PDF conversion controller error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
 
             $safeMessage = 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.';
 

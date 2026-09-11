@@ -509,6 +509,12 @@
         .processing-indicator { display: none; margin-top: 1.25rem; background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem 1.25rem; text-align: center; }
         .spinner { width: 24px; height: 24px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 0.5rem; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .processing-elapsed { font-size: 0.82rem; color: var(--accent); font-weight: 600; margin-top: 4px; font-variant-numeric: tabular-nums; }
+        .processing-detail { font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; }
+        .conversion-error-banner { display: none; margin-top: 1rem; background: var(--danger-bg); border: 1px solid var(--danger-border); border-radius: var(--radius-md); padding: 1rem 1.25rem; color: var(--danger-text); font-size: 0.88rem; line-height: 1.5; }
+        .conversion-error-banner strong { display: block; margin-bottom: 4px; }
+        .conversion-error-banner .error-dismiss { float: right; background: none; border: none; color: var(--danger-text); cursor: pointer; font-size: 1.1rem; padding: 0 4px; opacity: 0.7; }
+        .conversion-error-banner .error-dismiss:hover { opacity: 1; }
 
         /* Modal Styles */
         .modal-overlay { position: fixed; inset: 0; background: var(--modal-overlay); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 1.25rem; }
@@ -1209,8 +1215,9 @@
 
             <div class="processing-indicator" id="processingIndicator">
                 <div class="spinner"></div>
-                <div class="processing-text" style="font-size:0.88rem;color:var(--text-main);font-weight:600;">Merender halaman PDF dengan pdftoppm...</div>
-                <div class="processing-sub" style="font-size:0.78rem;color:var(--text-dim);margin-top:2px;">Harap tunggu, browser akan otomatis mengunduh hasil konversi.</div>
+                <div class="processing-text" style="font-size:0.88rem;color:var(--text-main);font-weight:600;" id="processingText">Merender halaman PDF dengan pdftoppm...</div>
+                <div class="processing-elapsed" id="processingElapsed"></div>
+                <div class="processing-detail" id="processingDetail">Harap tunggu, browser akan otomatis mengunduh hasil konversi.</div>
             </div>
 
             <div class="batch-progress" id="batchProgress" style="display:none;">
@@ -1220,6 +1227,12 @@
                 <div class="batch-progress-text" id="batchProgressText">0 / 0 selesai</div>
             </div>
         </form>
+
+        <div class="conversion-error-banner" id="conversionErrorBanner">
+            <button type="button" class="error-dismiss" id="errorDismiss">&times;</button>
+            <strong id="conversionErrorTitle">Konversi Gagal</strong>
+            <span id="conversionErrorBody"></span>
+        </div>
     </div>
 
     {{-- Limit Reached Modal --}}
@@ -1409,6 +1422,14 @@
         const btnCancelModal = document.getElementById('btnCancelModal');
         const btnSubmitModal = document.getElementById('btnSubmitModal');
 
+        const processingElapsed = document.getElementById('processingElapsed');
+        const processingText = document.getElementById('processingText');
+        const processingDetail = document.getElementById('processingDetail');
+        const conversionErrorBanner = document.getElementById('conversionErrorBanner');
+        const conversionErrorTitle = document.getElementById('conversionErrorTitle');
+        const conversionErrorBody = document.getElementById('conversionErrorBody');
+        const errorDismiss = document.getElementById('errorDismiss');
+
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         const convertUrl = '{{ route("converter.process") }}';
         const MAX_BATCH = {{ $maxBatchSize ?? 10 }};
@@ -1417,6 +1438,8 @@
 
         let batchQueueData = [];
         let isProcessingBatch = false;
+        let processingTimer = null;
+        let processingStartTime = 0;
 
         function formatBytes(bytes, decimals = 2) {
             if (!bytes || bytes === 0) return '0 Bytes';
@@ -1431,6 +1454,38 @@
             const div = document.createElement('div');
             div.textContent = str;
             return div.innerHTML;
+        }
+
+        function formatElapsed(seconds) {
+            if (seconds < 60) return seconds + 'd';
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return m + 'm ' + s + 'd';
+        }
+
+        function startElapsedTimer() {
+            processingStartTime = Date.now();
+            updateElapsedDisplay();
+            processingTimer = setInterval(updateElapsedDisplay, 1000);
+        }
+
+        function stopElapsedTimer() {
+            if (processingTimer) { clearInterval(processingTimer); processingTimer = null; }
+        }
+
+        function updateElapsedDisplay() {
+            const secs = Math.floor((Date.now() - processingStartTime) / 1000);
+            processingElapsed.textContent = 'Berjalan selama ' + formatElapsed(secs);
+        }
+
+        function showErrorBanner(title, message) {
+            conversionErrorTitle.textContent = title;
+            conversionErrorBody.textContent = message;
+            conversionErrorBanner.style.display = 'block';
+        }
+
+        function hideErrorBanner() {
+            conversionErrorBanner.style.display = 'none';
         }
 
         function getFileError(file) {
@@ -1608,6 +1663,19 @@
             renderBatchList();
             updateProgress();
 
+            const fileStartTime = Date.now();
+            const fileTimer = setInterval(() => {
+                const secs = Math.floor((Date.now() - fileStartTime) / 1000);
+                const statusEl = document.querySelector('#batch-item-' + item.id + ' .batch-item-status');
+                if (statusEl) {
+                    statusEl.innerHTML = '<span class="spinner-sm"></span> Memproses... (' + formatElapsed(secs) + ')';
+                }
+            }, 1000);
+
+            hideErrorBanner();
+            processingText.textContent = 'Mengkonversi: ' + item.file.name;
+            processingDetail.textContent = 'File ' + (batchQueueData.indexOf(item) + 1) + ' dari ' + batchQueueData.length + ' — Harap tunggu...';
+
             const fd = new FormData();
             if (item.tempFileId) {
                 fd.append('temp_file_id', item.tempFileId);
@@ -1623,6 +1691,8 @@
                     headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/octet-stream' },
                     body: fd
                 });
+
+                clearInterval(fileTimer);
 
                 if (!response.ok) {
                     let errMsg = 'Konversi gagal.';
@@ -1647,6 +1717,7 @@
                     item.error = errMsg;
                     renderBatchList();
                     updateProgress();
+                    showErrorBanner('Konversi Gagal — ' + item.file.name, errMsg);
                     return;
                 }
 
@@ -1662,6 +1733,7 @@
                 updateProgress();
                 triggerBlobDownload(blob, downloadName);
             } catch (err) {
+                clearInterval(fileTimer);
                 item.status = 'failed';
                 if (err.name === 'TypeError') {
                     item.error = 'Koneksi terputus. Periksa jaringan Anda dan coba lagi.';
@@ -1672,14 +1744,20 @@
                 }
                 renderBatchList();
                 updateProgress();
+                showErrorBanner('Konversi Gagal — ' + item.file.name, item.error);
             }
         }
 
         async function processBatch() {
             if (isProcessingBatch) return;
             isProcessingBatch = true;
+            hideErrorBanner();
 
-            processingIndicator.style.display = 'none';
+            processingIndicator.style.display = 'block';
+            processingText.textContent = 'Merender halaman PDF dengan pdftoppm...';
+            processingDetail.textContent = 'Harap tunggu, browser akan otomatis mengunduh hasil konversi.';
+            startElapsedTimer();
+
             btnSubmit.setAttribute('disabled', 'true');
             batchProgress.style.display = 'block';
 
@@ -1689,6 +1767,8 @@
                 }
             }
 
+            stopElapsedTimer();
+            processingIndicator.style.display = 'none';
             isProcessingBatch = false;
             updateBatchState();
         }
@@ -1888,6 +1968,9 @@
             btnSubmitText.textContent = 'Mulai Konversi & Download';
             btnDownloadAll.style.display = 'none';
             batchProgress.style.display = 'none';
+            hideErrorBanner();
+            stopElapsedTimer();
+            processingIndicator.style.display = 'none';
         });
 
         btnClearBatch.addEventListener('click', () => {
@@ -1902,6 +1985,9 @@
             btnSubmitText.textContent = 'Mulai Konversi & Download';
             btnDownloadAll.style.display = 'none';
             batchProgress.style.display = 'none';
+            hideErrorBanner();
+            stopElapsedTimer();
+            processingIndicator.style.display = 'none';
         });
 
         btnDownloadAll.addEventListener('click', () => {
@@ -1914,6 +2000,8 @@
             if (batchQueueData.length === 0) return;
             processBatch();
         });
+
+        errorDismiss.addEventListener('click', hideErrorBanner);
     });
 
     function toggleDarkMode() {
