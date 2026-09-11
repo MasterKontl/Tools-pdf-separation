@@ -1413,6 +1413,7 @@
         const convertUrl = '{{ route("converter.process") }}';
         const MAX_BATCH = {{ $maxBatchSize ?? 10 }};
         const MAX_SIZE = {{ config('converter.max_file_size_kb', 102400) }} * 1024;
+        const IS_UNLIMITED = {{ ($usageInfo['unlimited'] ?? false) ? 'true' : 'false' }};
 
         let batchQueueData = [];
         let isProcessingBatch = false;
@@ -1436,7 +1437,7 @@
             if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
                 return 'Bukan file PDF';
             }
-            if (file.size > MAX_SIZE) {
+            if (!IS_UNLIMITED && file.size > MAX_SIZE) {
                 return 'Ukuran melebihi limit (' + formatBytes(file.size) + ')';
             }
             if (file.size === 0) {

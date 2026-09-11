@@ -25,6 +25,7 @@ class ConvertPdfRequest extends FormRequest
         $maxKb = config('converter.max_file_size_kb', 102400);
         $user = $this->user();
         $canHighDpi = $user && $user->canAccessHighDpi();
+        $isUnlimited = $user && $user->isUnlimited();
         $allowedDpis = $canHighDpi ? [150, 300, 600] : [150, 300];
         $allowedFormats = config('converter.allowed_formats', ['png', 'jpg', 'jpeg']);
 
@@ -55,12 +56,15 @@ class ConvertPdfRequest extends FormRequest
             ];
             $rules['pdf'] = ['nullable'];
         } else {
-            $rules['pdf'] = [
+            $pdfRules = [
                 'required',
                 'file',
                 'mimes:pdf',
-                'max:' . $maxKb,
             ];
+            if (!$isUnlimited) {
+                $pdfRules[] = 'max:' . $maxKb;
+            }
+            $rules['pdf'] = $pdfRules;
             $rules['temp_file_id'] = ['nullable', 'string'];
         }
 
