@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'payment/webhook/*',
             'api/payments/webhook/*',
             'api/payment/webhook/*',
+            'convert/upload/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
