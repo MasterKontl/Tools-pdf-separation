@@ -20,4 +20,4 @@ cmds = [
 ]
 
 [start]
-cmd = "php -d expose_php=Off artisan migrate --force && php -d expose_php=Off artisan db:seed --class=PlanSeeder --force && php -d expose_php=Off artisan serve --host=0.0.0.0 --port=$PORT"
+cmd = "php -d expose_php=Off -d upload_max_filesize=250M -d post_max_size=260M -d max_execution_time=900 -d max_input_time=900 -d memory_limit=1024M artisan migrate --force && php -d expose_php=Off artisan db:seed --class=PlanSeeder --force && php -d expose_php=Off -d upload_max_filesize=250M -d post_max_size=260M artisan queue:work --sleep=1 --tries=3 --max-time=3600 & php -d expose_php=Off -d upload_max_filesize=250M -d post_max_size=260M artisan serve --host=0.0.0.0 --port=$PORT"

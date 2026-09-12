@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\ConversionException;
 use App\Exceptions\QuotaExceededException;
 use App\Http\Requests\ConvertPdfRequest;
+use App\Jobs\ConvertPdfPendingJob;
 use App\Services\PdfConverterService;
 use App\Services\PdfUrlFetcherService;
 use App\Services\QuotaService;
@@ -358,21 +359,17 @@ class PdfConverterController extends Controller
                 'started_at' => now()->toIso8601String(),
             ], JSON_PRETTY_PRINT));
 
-            // Launch background artisan command
-            $phpBinary = PHP_BINARY;
-            $artisanPath = base_path('artisan');
-            $cmd = sprintf(
-                '%s %s convert:job %s > /dev/null 2>&1 & echo $!',
-                escapeshellarg($phpBinary),
-                escapeshellarg($artisanPath),
-                escapeshellarg($jobId)
+            // Launch background conversion via queue
+            ConvertPdfPendingJob::dispatch(
+                jobId: $jobId,
+                format: $format,
+                dpi: $dpi,
+                sourcePath: $jobSourcePath,
+                originalName: $originalName,
+                quotaInfo: $quotaInfo,
             );
 
-            $output = [];
-            $exitCode = 0;
-            exec($cmd, $output, $exitCode);
-
-            Log::info('Conversion job started', [
+            Log::info('Conversion job dispatched', [
                 'job_id' => $jobId,
                 'user_id' => $user?->id ?? 'guest',
                 'format' => $format,
