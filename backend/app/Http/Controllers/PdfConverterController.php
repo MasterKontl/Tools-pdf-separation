@@ -509,6 +509,45 @@ class PdfConverterController extends Controller
     }
 
     /**
+     * Upload converted result file from worker (internal use only).
+     */
+    public function jobUploadResult(string $jobId, Request $request): JsonResponse
+    {
+        $job = ConversionJob::find($jobId);
+        if (!$job) {
+            return response()->json(['success' => false, 'error' => 'Job tidak ditemukan.'], 404);
+        }
+
+        $file = $request->file('result');
+        if (!$file) {
+            return response()->json(['success' => false, 'error' => 'File tidak ditemukan.'], 400);
+        }
+
+        $jobDir = storage_path('app/jobs/' . $jobId);
+        if (!File::isDirectory($jobDir)) {
+            File::makeDirectory($jobDir, 0755, true, true);
+        }
+
+        $fileName = $request->input('file_name', 'converted_file');
+        $mimeType = $request->input('mime_type', 'application/octet-stream');
+        $isZip = (bool) $request->input('is_zip', false);
+        $pageCount = (int) $request->input('page_count', 1);
+
+        $savedPath = $jobDir . '/' . $fileName;
+        $file->move($jobDir, $fileName);
+
+        $job->update([
+            'file_path' => $savedPath,
+            'file_name' => $fileName,
+            'mime_type' => $mimeType,
+            'is_zip' => $isZip,
+            'page_count' => $pageCount,
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
      * Cleanup old conversion jobs (older than 30 minutes).
      */
     public function cleanupJobs(): void

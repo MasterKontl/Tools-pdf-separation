@@ -66,15 +66,13 @@ class ConvertPdfPendingJob implements ShouldQueue
                 $this->dpi
             );
 
+            // Upload result back to web service
+            $this->uploadResult($result);
+
             $elapsed = round(microtime(true) - $start, 2);
 
             $job->update([
                 'status' => 'completed',
-                'file_path' => $result['filePath'],
-                'file_name' => $result['fileName'],
-                'mime_type' => $result['mimeType'],
-                'is_zip' => $result['isZip'],
-                'page_count' => $result['pageCount'],
                 'elapsed_sec' => $elapsed,
             ]);
 
@@ -175,6 +173,42 @@ class ConvertPdfPendingJob implements ShouldQueue
             'job_id' => $this->jobId,
             'size' => filesize($destinationPath),
         ]);
+    }
+
+    private function uploadResult(array $result): void
+    {
+        $url = config('app.url') . '/convert/upload/' . $this->jobId;
+
+        Log::info('Uploading conversion result', [
+            'job_id' => $this->jobId,
+            'file_name' => $result['fileName'],
+            'size' => filesize($result['filePath']),
+        ]);
+
+        $response = Http::timeout(600)
+            ->attach('result', file_get_contents($result['filePath']), $result['fileName'])
+            ->post($url, [
+                'file_name' => $result['fileName'],
+                'mime_type' => $result['mimeType'],
+                'is_zip' => $result['isZip'] ? '1' : '0',
+                'page_count' => (string) $result['pageCount'],
+            ]);
+
+        if ($response->failed()) {
+            throw new \RuntimeException(
+                'Gagal mengunggah hasil konversi: HTTP ' . $response->status()
+            );
+        }
+
+        Log::info('Result uploaded successfully', [
+            'job_id' => $this->jobId,
+        ]);
+
+        // Cleanup local result files
+        @unlink($result['filePath']);
+        if ($result['tempDir'] && is_dir($result['tempDir'])) {
+            @rmdir($result['tempDir']);
+        }
     }
 
     private function releaseQuota(): void

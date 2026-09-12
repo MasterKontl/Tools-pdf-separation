@@ -30,6 +30,7 @@ Route::middleware('throttle:convert')->group(function () {
 Route::get('/convert/status/{jobId}', [PdfConverterController::class, 'jobStatus'])->name('converter.job-status');
 Route::get('/convert/result/{jobId}', [PdfConverterController::class, 'jobDownload'])->name('converter.job-download');
 Route::get('/convert/file/{jobId}', [PdfConverterController::class, 'jobFile'])->name('converter.job-file');
+Route::post('/convert/upload/{jobId}', [PdfConverterController::class, 'jobUploadResult'])->name('converter.job-upload');
 
 // ==========================================
 // V2.1 - Color Separation
