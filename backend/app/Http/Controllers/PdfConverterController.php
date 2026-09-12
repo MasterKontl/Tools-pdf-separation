@@ -6,6 +6,7 @@ use App\Exceptions\ConversionException;
 use App\Exceptions\QuotaExceededException;
 use App\Http\Requests\ConvertPdfRequest;
 use App\Jobs\ConvertPdfPendingJob;
+use App\Models\ConversionJob;
 use App\Services\PdfConverterService;
 use App\Services\PdfUrlFetcherService;
 use App\Services\QuotaService;
@@ -353,11 +354,16 @@ class PdfConverterController extends Controller
             ];
             file_put_contents($jobDir . '/config.json', json_encode($config, JSON_PRETTY_PRINT));
 
-            // Write initial status
-            file_put_contents($jobDir . '/status.json', json_encode([
+            // Create database record for job tracking
+            ConversionJob::create([
+                'job_id' => $jobId,
                 'status' => 'processing',
-                'started_at' => now()->toIso8601String(),
-            ], JSON_PRETTY_PRINT));
+                'format' => $format,
+                'dpi' => $dpi,
+                'original_name' => $originalName,
+                'source_path' => $jobSourcePath,
+                'quota_data' => $quotaInfo,
+            ]);
 
             // Launch background conversion via queue
             ConvertPdfPendingJob::dispatch(
@@ -407,26 +413,24 @@ class PdfConverterController extends Controller
      */
     public function jobStatus(string $jobId): JsonResponse
     {
-        $statusPath = storage_path('app/jobs/' . $jobId . '/status.json');
+        $job = ConversionJob::find($jobId);
 
-        if (!file_exists($statusPath)) {
+        if (!$job) {
             return response()->json([
                 'success' => false,
                 'error' => 'Job tidak ditemukan.',
             ], 404);
         }
 
-        $status = json_decode(file_get_contents($statusPath), true);
-
         return response()->json([
             'success' => true,
             'job_id' => $jobId,
-            'status' => $status['status'] ?? 'unknown',
-            'error' => $status['error'] ?? null,
-            'error_type' => $status['error_type'] ?? null,
-            'elapsed_sec' => $status['elapsed_sec'] ?? null,
-            'page_count' => $status['page_count'] ?? null,
-            'is_zip' => $status['is_zip'] ?? null,
+            'status' => $job->status,
+            'error' => $job->error,
+            'error_type' => $job->error_type,
+            'elapsed_sec' => $job->elapsed_sec,
+            'page_count' => $job->page_count,
+            'is_zip' => $job->is_zip,
         ]);
     }
 
@@ -435,25 +439,23 @@ class PdfConverterController extends Controller
      */
     public function jobDownload(string $jobId): BinaryFileResponse|JsonResponse
     {
-        $statusPath = storage_path('app/jobs/' . $jobId . '/status.json');
+        $job = ConversionJob::find($jobId);
 
-        if (!file_exists($statusPath)) {
+        if (!$job) {
             return response()->json([
                 'success' => false,
                 'error' => 'Job tidak ditemukan.',
             ], 404);
         }
 
-        $status = json_decode(file_get_contents($statusPath), true);
-
-        if (($status['status'] ?? '') !== 'completed') {
+        if ($job->status !== 'completed') {
             return response()->json([
                 'success' => false,
                 'error' => 'Konversi belum selesai atau gagal.',
             ], 400);
         }
 
-        $filePath = $status['file_path'] ?? null;
+        $filePath = $job->file_path;
         if (!$filePath || !file_exists($filePath)) {
             return response()->json([
                 'success' => false,
@@ -461,14 +463,11 @@ class PdfConverterController extends Controller
             ], 404);
         }
 
-        $fileName = $status['file_name'] ?? 'converted_file';
-        $mimeType = $status['mime_type'] ?? 'application/octet-stream';
-
         return response()->download(
             $filePath,
-            $fileName,
+            $job->file_name ?? 'converted_file',
             [
-                'Content-Type' => $mimeType,
+                'Content-Type' => $job->mime_type ?? 'application/octet-stream',
                 'Cache-Control' => 'no-cache, no-store, must-revalidate',
                 'Pragma' => 'no-cache',
                 'Expires' => '0',
@@ -477,17 +476,52 @@ class PdfConverterController extends Controller
     }
 
     /**
+     * Serve the input file of a conversion job (for worker to download).
+     */
+    public function jobFile(string $jobId): BinaryFileResponse|JsonResponse
+    {
+        $job = ConversionJob::find($jobId);
+
+        if (!$job) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Job tidak ditemukan.',
+            ], 404);
+        }
+
+        $filePath = $job->source_path;
+
+        if (!$filePath || !file_exists($filePath)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'File input tidak ditemukan.',
+            ], 404);
+        }
+
+        return response()->download(
+            $filePath,
+            'input.pdf',
+            [
+                'Content-Type' => 'application/pdf',
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            ]
+        );
+    }
+
+    /**
      * Cleanup old conversion jobs (older than 30 minutes).
      */
     public function cleanupJobs(): void
     {
+        ConversionJob::where('created_at', '<', now()->subMinutes(30))->delete();
+
         $jobsDir = storage_path('app/jobs');
         if (!File::isDirectory($jobsDir)) {
             return;
         }
 
         $directories = File::directories($jobsDir);
-        $threshold = time() - 1800; // 30 minutes
+        $threshold = time() - 1800;
 
         foreach ($directories as $dir) {
             if (filemtime($dir) < $threshold) {

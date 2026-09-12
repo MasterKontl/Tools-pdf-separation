@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Exceptions\ConversionException;
+use App\Models\ConversionJob;
 use App\Services\PdfConverterService;
 use App\Services\QuotaReservation;
 use Illuminate\Bus\Queueable;
@@ -11,6 +12,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -35,21 +37,38 @@ class ConvertPdfPendingJob implements ShouldQueue
 
     public function handle(PdfConverterService $converter): void
     {
-        $jobDir = storage_path('app/jobs/' . $this->jobId);
-        $statusPath = $jobDir . '/status.json';
+        $job = ConversionJob::find($this->jobId);
+        if (!$job) {
+            Log::error('Conversion job not found in database', ['job_id' => $this->jobId]);
+            return;
+        }
 
+        $jobDir = storage_path('app/jobs/' . $this->jobId);
+        if (!File::isDirectory($jobDir)) {
+            File::makeDirectory($jobDir, 0755, true, true);
+        }
+
+        $localSourcePath = $jobDir . '/input.pdf';
         $start = microtime(true);
 
         try {
+            // Download source file from the web service if not available locally
+            if (!file_exists($this->sourcePath)) {
+                $this->downloadSource($localSourcePath);
+                $sourceToUse = $localSourcePath;
+            } else {
+                $sourceToUse = $this->sourcePath;
+            }
+
             $result = $converter->convert(
-                $this->sourcePath,
+                $sourceToUse,
                 $this->format,
                 $this->dpi
             );
 
             $elapsed = round(microtime(true) - $start, 2);
 
-            $status = [
+            $job->update([
                 'status' => 'completed',
                 'file_path' => $result['filePath'],
                 'file_name' => $result['fileName'],
@@ -57,10 +76,7 @@ class ConvertPdfPendingJob implements ShouldQueue
                 'is_zip' => $result['isZip'],
                 'page_count' => $result['pageCount'],
                 'elapsed_sec' => $elapsed,
-                'completed_at' => now()->toIso8601String(),
-            ];
-
-            file_put_contents($statusPath, json_encode($status, JSON_PRETTY_PRINT));
+            ]);
 
             Log::info('Background conversion completed', [
                 'job_id' => $this->jobId,
@@ -69,9 +85,7 @@ class ConvertPdfPendingJob implements ShouldQueue
                 'is_zip' => $result['isZip'],
             ]);
 
-            if (file_exists($this->sourcePath)) {
-                @unlink($this->sourcePath);
-            }
+            $this->cleanupFiles($localSourcePath, $sourceToUse);
         } catch (ConversionException $e) {
             $elapsed = round(microtime(true) - $start, 2);
 
@@ -82,9 +96,15 @@ class ConvertPdfPendingJob implements ShouldQueue
                 'elapsed_sec' => $elapsed,
             ]);
 
-            $this->writeFailure($statusPath, $e->getErrorType(), $e->getMessage(), $elapsed);
+            $job->update([
+                'status' => 'failed',
+                'error_type' => $e->getErrorType(),
+                'error' => $e->getMessage(),
+                'elapsed_sec' => $elapsed,
+            ]);
+
             $this->releaseQuota();
-            $this->cleanupSource();
+            $this->cleanupFiles($localSourcePath, $this->sourcePath);
         } catch (Throwable $e) {
             $elapsed = round(microtime(true) - $start, 2);
 
@@ -95,38 +115,66 @@ class ConvertPdfPendingJob implements ShouldQueue
                 'elapsed_sec' => $elapsed,
             ]);
 
-            $this->writeFailure($statusPath, 'unexpected_error', 'Terjadi kesalahan yang tidak terduga.', $elapsed);
+            $job->update([
+                'status' => 'failed',
+                'error_type' => 'unexpected_error',
+                'error' => 'Terjadi kesalahan yang tidak terduga.',
+                'elapsed_sec' => $elapsed,
+            ]);
+
             $this->releaseQuota();
-            $this->cleanupSource();
+            $this->cleanupFiles($localSourcePath, $this->sourcePath);
         }
     }
 
     public function failed(?Throwable $exception): void
     {
-        $jobDir = storage_path('app/jobs/' . $this->jobId);
-        $statusPath = $jobDir . '/status.json';
+        $job = ConversionJob::find($this->jobId);
+        if ($job) {
+            $job->update([
+                'status' => 'failed',
+                'error_type' => 'job_failed',
+                'error' => 'Konversi gagal karena kesalahan server.',
+            ]);
+        }
 
         Log::error('Conversion job permanently failed', [
             'job_id' => $this->jobId,
             'error' => $exception?->getMessage(),
         ]);
 
-        $this->writeFailure($statusPath, 'job_failed', 'Konversi gagal karena kesalahan server.', 0);
         $this->releaseQuota();
-        $this->cleanupSource();
     }
 
-    private function writeFailure(string $statusPath, string $errorType, string $message, float $elapsed): void
+    private function downloadSource(string $destinationPath): void
     {
-        $status = [
-            'status' => 'failed',
-            'error_type' => $errorType,
-            'error' => $message,
-            'elapsed_sec' => $elapsed,
-            'failed_at' => now()->toIso8601String(),
-        ];
+        $url = config('app.url') . '/convert/file/' . $this->jobId;
 
-        @file_put_contents($statusPath, json_encode($status, JSON_PRETTY_PRINT));
+        Log::info('Downloading source file for conversion job', [
+            'job_id' => $this->jobId,
+            'url' => $url,
+        ]);
+
+        $response = Http::timeout(300)
+            ->withHeaders(['X-Worker-Token' => 'internal'])
+            ->get($url);
+
+        if ($response->failed()) {
+            throw new \RuntimeException(
+                'Gagal mengunduh file sumber: HTTP ' . $response->status()
+            );
+        }
+
+        file_put_contents($destinationPath, $response->body());
+
+        if (!file_exists($destinationPath) || filesize($destinationPath) === 0) {
+            throw new \RuntimeException('File sumber yang diunduh kosong atau tidak valid.');
+        }
+
+        Log::info('Source file downloaded', [
+            'job_id' => $this->jobId,
+            'size' => filesize($destinationPath),
+        ]);
     }
 
     private function releaseQuota(): void
@@ -157,10 +205,13 @@ class ConvertPdfPendingJob implements ShouldQueue
         }
     }
 
-    private function cleanupSource(): void
+    private function cleanupFiles(string $localPath, string $originalPath): void
     {
-        if ($this->sourcePath && file_exists($this->sourcePath)) {
-            @unlink($this->sourcePath);
+        if ($localPath && file_exists($localPath)) {
+            @unlink($localPath);
+        }
+        if ($originalPath && file_exists($originalPath) && $originalPath !== $localPath) {
+            @unlink($originalPath);
         }
     }
 }
