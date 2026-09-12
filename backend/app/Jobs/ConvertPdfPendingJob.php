@@ -22,8 +22,6 @@ class ConvertPdfPendingJob implements ShouldQueue
 
     public int $tries = 1;
 
-    public bool $afterCommit = false;
-
     public function __construct(
         public string $jobId,
         public string $format,
@@ -31,7 +29,9 @@ class ConvertPdfPendingJob implements ShouldQueue
         public string $sourcePath,
         public string $originalName,
         public ?array $quotaInfo = null,
-    ) {}
+    ) {
+        $this->afterCommit = false;
+    }
 
     public function handle(PdfConverterService $converter): void
     {
