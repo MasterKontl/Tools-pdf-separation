@@ -20,4 +20,4 @@ cmds = [
 ]
 
 [start]
-cmd = "chmod +x start.sh && ./start.sh"
+cmd = "php -d expose_php=Off artisan migrate --force && php -d expose_php=Off artisan db:seed --class=PlanSeeder --force && php -d expose_php=Off artisan serve --host=0.0.0.0 --port=$PORT"
