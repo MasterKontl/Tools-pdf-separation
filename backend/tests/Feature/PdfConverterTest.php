@@ -236,4 +236,176 @@ class PdfConverterTest extends TestCase
 
         @unlink($tempCorrupt);
     }
+
+    /**
+     * Test parallel conversion with multi-page PDF produces correct ZIP.
+     */
+    public function test_convert_multipage_pdf_parallel_produces_correct_zip(): void
+    {
+        config(['converter.parallel_chunks' => 2]);
+
+        $pdfContent = $this->createSamplePdfContent(6);
+        $tempPdf = tempnam(sys_get_temp_dir(), 'pdf_test_') . '.pdf';
+        file_put_contents($tempPdf, $pdfContent);
+
+        $file = new UploadedFile($tempPdf, 'parallel_test.pdf', 'application/pdf', null, true);
+
+        $response = $this->post('/convert', [
+            'pdf' => $file,
+            'format' => 'png',
+            'dpi' => 150,
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals('application/zip', $response->headers->get('Content-Type'));
+        $this->assertStringContainsString('parallel-test_150dpi.zip', (string) $response->headers->get('Content-Disposition'));
+
+        $zipPath = $response->getFile()->getPathname();
+        $this->assertFileExists($zipPath);
+
+        $zip = new ZipArchive();
+        $this->assertTrue($zip->open($zipPath) === true);
+        $this->assertEquals(6, $zip->numFiles);
+
+        // Verify page order is correct
+        for ($i = 0; $i < 6; $i++) {
+            $expectedPage = sprintf("page_%02d", $i + 1);
+            $this->assertStringContainsString($expectedPage, $zip->getNameIndex($i));
+        }
+
+        $zip->close();
+        @unlink($tempPdf);
+    }
+
+    /**
+     * Test that small PDF (1-3 pages) still uses single process even with parallel_chunks > 1.
+     */
+    public function test_convert_small_pdf_skips_parallel(): void
+    {
+        config(['converter.parallel_chunks' => 2]);
+
+        // 2 pages → single process (below threshold), produces ZIP (existing behavior)
+        $pdfContent = $this->createSamplePdfContent(2);
+        $tempPdf = tempnam(sys_get_temp_dir(), 'pdf_test_') . '.pdf';
+        file_put_contents($tempPdf, $pdfContent);
+
+        $file = new UploadedFile($tempPdf, 'small_skip.pdf', 'application/pdf', null, true);
+
+        $response = $this->post('/convert', [
+            'pdf' => $file,
+            'format' => 'png',
+            'dpi' => 150,
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals('application/zip', $response->headers->get('Content-Type'));
+
+        $zipPath = $response->getFile()->getPathname();
+        $zip = new ZipArchive();
+        $this->assertTrue($zip->open($zipPath) === true);
+        $this->assertEquals(2, $zip->numFiles);
+        $zip->close();
+
+        @unlink($tempPdf);
+    }
+
+    /**
+     * Test parallel conversion with odd page count.
+     */
+    public function test_convert_odd_pages_parallel_produces_correct_zip(): void
+    {
+        config(['converter.parallel_chunks' => 2]);
+
+        $pdfContent = $this->createSamplePdfContent(7);
+        $tempPdf = tempnam(sys_get_temp_dir(), 'pdf_test_') . '.pdf';
+        file_put_contents($tempPdf, $pdfContent);
+
+        $file = new UploadedFile($tempPdf, 'odd_pages.pdf', 'application/pdf', null, true);
+
+        $response = $this->post('/convert', [
+            'pdf' => $file,
+            'format' => 'png',
+            'dpi' => 150,
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals('application/zip', $response->headers->get('Content-Type'));
+
+        $zipPath = $response->getFile()->getPathname();
+        $zip = new ZipArchive();
+        $this->assertTrue($zip->open($zipPath) === true);
+        $this->assertEquals(7, $zip->numFiles);
+
+        // Verify all 7 pages present and in order
+        for ($i = 0; $i < 7; $i++) {
+            $expectedPage = sprintf("page_%02d", $i + 1);
+            $this->assertStringContainsString($expectedPage, $zip->getNameIndex($i));
+        }
+
+        $zip->close();
+        @unlink($tempPdf);
+    }
+
+    /**
+     * Test backward compatibility: parallel_chunks=1 uses sequential processing.
+     */
+    public function test_convert_single_chunk_uses_sequential(): void
+    {
+        config(['converter.parallel_chunks' => 1]);
+
+        $pdfContent = $this->createSamplePdfContent(5);
+        $tempPdf = tempnam(sys_get_temp_dir(), 'pdf_test_') . '.pdf';
+        file_put_contents($tempPdf, $pdfContent);
+
+        $file = new UploadedFile($tempPdf, 'sequential_test.pdf', 'application/pdf', null, true);
+
+        $response = $this->post('/convert', [
+            'pdf' => $file,
+            'format' => 'jpg',
+            'dpi' => 300,
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals('application/zip', $response->headers->get('Content-Type'));
+        $this->assertStringContainsString('sequential-test_300dpi.zip', (string) $response->headers->get('Content-Disposition'));
+
+        $zipPath = $response->getFile()->getPathname();
+        $zip = new ZipArchive();
+        $this->assertTrue($zip->open($zipPath) === true);
+        $this->assertEquals(5, $zip->numFiles);
+        $zip->close();
+
+        @unlink($tempPdf);
+    }
+
+    /**
+     * Test parallel conversion with JPEG format.
+     */
+    public function test_convert_multipage_jpg_parallel_produces_zip(): void
+    {
+        config(['converter.parallel_chunks' => 2]);
+
+        $pdfContent = $this->createSamplePdfContent(4);
+        $tempPdf = tempnam(sys_get_temp_dir(), 'pdf_test_') . '.pdf';
+        file_put_contents($tempPdf, $pdfContent);
+
+        $file = new UploadedFile($tempPdf, 'parallel_jpg.pdf', 'application/pdf', null, true);
+
+        $response = $this->post('/convert', [
+            'pdf' => $file,
+            'format' => 'jpg',
+            'dpi' => 150,
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals('application/zip', $response->headers->get('Content-Type'));
+
+        $zipPath = $response->getFile()->getPathname();
+        $zip = new ZipArchive();
+        $this->assertTrue($zip->open($zipPath) === true);
+        $this->assertEquals(4, $zip->numFiles);
+        $zip->close();
+
+        @unlink($tempPdf);
+    }
 }
