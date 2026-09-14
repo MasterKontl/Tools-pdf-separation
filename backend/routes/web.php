@@ -124,12 +124,6 @@ Route::get('/health', function () {
         'status' => 'ok',
         'service' => 'Tools DKV API',
         'timestamp' => now()->toIso8601String(),
-        'php' => [
-            'max_execution_time' => (int) ini_get('max_execution_time'),
-            'upload_max_filesize' => ini_get('upload_max_filesize'),
-            'post_max_size' => ini_get('post_max_size'),
-            'memory_limit' => ini_get('memory_limit'),
-        ],
     ]);
 });
 
