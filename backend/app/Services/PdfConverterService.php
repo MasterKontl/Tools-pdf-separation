@@ -294,6 +294,14 @@ class PdfConverterService
                 $outputPrefix,
             ];
 
+            $chunkStart = microtime(true);
+
+            Log::info('PDF parallel chunk START', [
+                'chunk' => $index,
+                'first_page' => $range['first'],
+                'last_page' => $range['last'],
+            ]);
+
             $process = new Process($command);
             $process->setTimeout($timeout);
             $process->setIdleTimeout($timeout);
@@ -303,6 +311,7 @@ class PdfConverterService
                 'process' => $process,
                 'chunk_dir' => $chunkDir,
                 'range' => $range,
+                'start_time' => $chunkStart,
             ];
         }
 
@@ -312,6 +321,14 @@ class PdfConverterService
         foreach ($entries as $entry) {
             try {
                 $entry['process']->wait();
+
+                $chunkDuration = round(microtime(true) - $entry['start_time'], 2);
+
+                Log::info('PDF parallel chunk END', [
+                    'chunk' => $entry['range']['first'] . '-' . $entry['range']['last'],
+                    'duration_sec' => $chunkDuration,
+                    'exit_code' => $entry['process']->getExitCode(),
+                ]);
             } catch (\Exception $e) {
                 $errors[] = [
                     'entry' => $entry,
@@ -416,7 +433,19 @@ class PdfConverterService
         }
 
         // Create ZIP from all collected files
-        return $this->createZipArchive($allFiles, $safeBaseName, $dpi, $ext, $tempDir);
+        Log::info('PDF ZIP START', [
+            'file_count' => count($allFiles),
+        ]);
+
+        $zipStart = microtime(true);
+        $result = $this->createZipArchive($allFiles, $safeBaseName, $dpi, $ext, $tempDir);
+
+        Log::info('PDF ZIP END', [
+            'duration_sec' => round(microtime(true) - $zipStart, 2),
+            'file_size' => filesize($result['filePath']),
+        ]);
+
+        return $result;
     }
 
     /**
